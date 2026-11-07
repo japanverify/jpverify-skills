@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese company verification / 日本企業の照合
 
-Version 1.0.4 · JPVerify · https://www.jpverify.com
+Version 1.0.5 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -29,7 +29,7 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-company-verify and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-company-verify/1.0.4` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jp-company-verify/1.0.5` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
@@ -96,7 +96,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/jp-company/verify \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.4" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.5" \
   -H "Content-Type: application/json" \
   -d '{"name": "トヨタ自動車株式会社", "response_language": "both"}'
 ```
@@ -107,7 +107,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-company/verify",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-company-verify/1.0.4"},
+             "X-JPVerify-Client": "jp-company-verify/1.0.5"},
     json={"name": "トヨタ自動車株式会社", "response_language": "both"},
     timeout=60,
 )
@@ -119,7 +119,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-company/verify \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.4" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.5" \
   -H "Content-Type: application/json" \
   -d '{"name": "トヨタ自動車株式会社", "response_language": "both"}'
 ```

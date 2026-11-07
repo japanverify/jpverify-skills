@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5 — 2026-11
+
+- Issuer-match examples now use a real public NTA record (T1013301046627) instead of a placeholder number.
+
 ## 1.0.4 — 2026-11
 
 - `jp-invoice-number-check` and the `jpverify` router: new Japan Invoice Issuer Match endpoints
