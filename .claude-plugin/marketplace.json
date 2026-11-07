@@ -1,0 +1,18 @@
+{
+  "name": "jpverify",
+  "description": "JPVerify: Japan business data skills and MCP server for AI agents.",
+  "owner": {
+    "name": "JPVerify (DSテクニック)",
+    "email": "service@jpverify.com",
+    "url": "https://www.jpverify.com"
+  },
+  "plugins": [
+    {
+      "name": "jpverify",
+      "source": "./plugins/jpverify",
+      "description": "Japan business data for AI agents: company (法人番号) and T-number (インボイス) verification, invoice/receipt/business-card OCR, address and cross-border checks via the JPVerify MCP server.",
+      "category": "data",
+      "homepage": "https://www.jpverify.com"
+    }
+  ]
+}

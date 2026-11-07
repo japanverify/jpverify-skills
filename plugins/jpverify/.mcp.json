@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "jpverify": {
+      "type": "http",
+      "url": "https://api.jpverify.com/mcp?channel=claude-plugin",
+      "headers": {
+        "Authorization": "Bearer ${JPVERIFY_API_KEY:-}"
+      }
+    }
+  }
+}
