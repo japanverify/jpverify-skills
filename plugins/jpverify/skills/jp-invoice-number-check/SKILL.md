@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese T-number check / インボイス登録番号の確認
 
-Version 1.0.1 · JPVerify · https://www.jpverify.com
+Version 1.0.2 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -23,16 +23,13 @@ Do not use it to read an invoice image or PDF; use the `jp-business-document-ocr
 
 ## Connect / 接続
 
-JPVerify is a paid, per-call API. Pick the first option that applies; never guess credentials.
+JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is already configured. Never guess credentials, and never read a key from files or the environment.
 
-1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
-   - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured (it reads `JPVERIFY_API_KEY`). Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-invoice-number-check/1.0.1"`
-   Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
-2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
-3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-invoice-number-check and set `JPVERIFY_API_KEY`.
+1. **MCP tools (recommended).** Call the `jpverify` MCP tools listed in the table below. They use the API key the user saved in the plugin's settings (`/plugin` → JPVerify → Configure; stored in the system keychain). Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
+2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
+3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-invoice-number-check and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-invoice-number-check/1.0.1` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-invoice-number-check/1.0.2` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
@@ -74,7 +71,7 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 | Response | What to do |
 |---|---|
 | `200` | Use the result (see "Reading results"). With an API key, `X-JPVerify-Credits-Charged` and `X-JPVerify-Credits-Remaining` show the cost and balance. |
-| `401 invalid_api_key` | The key is missing, wrong or revoked. Ask the user to check `JPVERIFY_API_KEY`; do not retry with guesses. |
+| `401 invalid_api_key` | The key is missing, wrong or revoked. Ask the user to check the key saved in the plugin's settings; do not retry with guesses. |
 | `402 insufficient_credits` (API key) | Stop. Nothing was charged. Tell the user to top up at https://www.jpverify.com/account/billing. Do not retry. |
 | `402` with x402 payment requirements (no key) | Pay only within the approved budget, using the exact amount in the response. |
 | `422` | Invalid input; nothing was charged. Fix the input (the error says which field) and call again once. |
@@ -91,19 +88,19 @@ API key:
 
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/verify \
-  -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.1" \
+  -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.2" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```
 
 ```python
-import os, requests
+import requests
 
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/verify",
-    headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.0.1"},
+    headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
+             "X-JPVerify-Client": "jp-invoice-number-check/1.0.2"},
     json={"registration_number": "T1013301046627", "response_language": "both"},
     timeout=60,
 )
@@ -115,7 +112,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-invoice/verify \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.1" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.2" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```

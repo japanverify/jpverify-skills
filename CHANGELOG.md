@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2 — 2026-11
+
+- Claude Code plugin: the API key is now a plugin setting (`/plugin` → JPVerify → Configure), stored in the
+  system keychain and used only by the MCP server. Plugin skills no longer read `JPVERIFY_API_KEY` from the
+  environment; HTTP examples in the plugin show a `<YOUR_JPVERIFY_API_KEY>` placeholder.
+- Standalone skills (`skills/`) are unchanged.
+
 ## 1.0.1 — 2026-11
 
 - Claude Code plugin: add the plugin icon and `privacyPolicyUrl` (required by the plugin directory for plugins that use a remote MCP server).

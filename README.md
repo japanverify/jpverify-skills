@@ -42,7 +42,8 @@ Without a key or wallet the skills use the free `jpverify_guide` tool and point 
 
 ## MCP server
 
-`https://api.jpverify.com/mcp` (Streamable HTTP). The plugin configures it automatically; manually:
+`https://api.jpverify.com/mcp` (Streamable HTTP). The plugin configures it automatically: save your API key in
+`/plugin` → JPVerify → Configure (kept in the system keychain). Manually:
 
 ```bash
 claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY"
@@ -57,5 +58,5 @@ and is documented with its price. Results are public-registry pre-checks, not KY
 
 ## License
 
-MIT. Generated from the JPVerify API catalog (version 1.0.1); report issues at https://github.com/japanverify/jpverify-skills/issues
+MIT. Generated from the JPVerify API catalog (version 1.0.2); report issues at https://github.com/japanverify/jpverify-skills/issues
 or service@jpverify.com. Privacy policy: https://api.jpverify.com/en/privacy · Terms: https://api.jpverify.com/en/terms
