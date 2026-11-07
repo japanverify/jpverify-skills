@@ -7,7 +7,7 @@ Set `JPVERIFY_API_KEY` (create one at https://www.jpverify.com/signup?ref=jp-com
 ```bash
 curl -X POST https://api.jpverify.com/jp-company/verify \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.3" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.4" \
   -H "Content-Type: application/json" \
   -d '{"name": "トヨタ自動車株式会社", "response_language": "both"}'
 ```
@@ -18,7 +18,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-company/verify",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-company-verify/1.0.3"},
+             "X-JPVerify-Client": "jp-company-verify/1.0.4"},
     json={"name": "トヨタ自動車株式会社", "response_language": "both"},
     timeout=60,
 )
@@ -30,7 +30,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-company/report \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.3" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.4" \
   -H "Content-Type: application/json" \
   -d '{"name": "株式会社ABC", "response_language": "both"}'
 ```
@@ -41,7 +41,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-company/report",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-company-verify/1.0.3"},
+             "X-JPVerify-Client": "jp-company-verify/1.0.4"},
     json={"name": "株式会社ABC", "response_language": "both"},
     timeout=60,
 )
@@ -53,7 +53,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-company/verify-batch \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.3" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.4" \
   -H "Content-Type: application/json" \
   -d '{"items": [{"corporate_number": "1180301018771"}], "response_language": "both"}'
 ```
@@ -64,7 +64,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-company/verify-batch",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-company-verify/1.0.3"},
+             "X-JPVerify-Client": "jp-company-verify/1.0.4"},
     json={"items": [{"corporate_number": "1180301018771"}], "response_language": "both"},
     timeout=60,
 )
@@ -76,7 +76,7 @@ print(response.status_code, response.json())
 ```bash
 curl -G https://api.jpverify.com/jp-company/filings \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.3" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.4" \
   --data-urlencode 'edinet_code=E00000' \
   --data-urlencode 'limit=20' \
   --data-urlencode 'response_language=en'
@@ -88,7 +88,7 @@ import os, requests
 response = requests.get(
     "https://api.jpverify.com/jp-company/filings",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-company-verify/1.0.3"},
+             "X-JPVerify-Client": "jp-company-verify/1.0.4"},
     params={"edinet_code": "E00000", "limit": 20, "response_language": "en"},
     timeout=60,
 )
@@ -100,7 +100,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-regulated-entity/verify \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.3" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.4" \
   -H "Content-Type: application/json" \
   -d '{"corporate_number": "1234567890123", "categories": ["funds_transfer_business"], "response_language": "en"}'
 ```
@@ -111,7 +111,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-regulated-entity/verify",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-company-verify/1.0.3"},
+             "X-JPVerify-Client": "jp-company-verify/1.0.4"},
     json={"corporate_number": "1234567890123", "categories": ["funds_transfer_business"], "response_language": "en"},
     timeout=60,
 )

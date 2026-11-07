@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4 — 2026-11
+
+- `jp-invoice-number-check` and the `jpverify` router: new Japan Invoice Issuer Match endpoints
+  `POST /v1/invoices/issuer-match` ($0.05) and `/extract` ($0.10) — match an invoice issuer to the supplier's expected
+  T-number or corporate number from master data, with invoice, expected and registry values kept separate.
+
 ## 1.0.3 — 2026-11
 
 - Standalone skills: the Connect section now says the Claude Code plugin uses the key saved in the plugin's
