@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3 — 2026-11
+
+- Standalone skills: the Connect section now says the Claude Code plugin uses the key saved in the plugin's
+  settings (since 1.0.2), not `JPVERIFY_API_KEY`.
+
 ## 1.0.2 — 2026-11
 
 - Claude Code plugin: the API key is now a plugin setting (`/plugin` → JPVerify → Configure), stored in the
