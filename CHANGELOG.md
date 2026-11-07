@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 — 2026-11
+
+- Claude Code plugin: add the plugin icon and `privacyPolicyUrl` (required by the plugin directory for plugins that use a remote MCP server).
+- README: privacy policy and terms links.
+
 ## 1.0.0 — 2026-11
 
 First release.
