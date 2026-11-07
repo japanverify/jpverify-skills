@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.6 — 2026-11
+
+- New English entity resolve endpoint `POST /v1/jp/entities/resolve` ($0.50, MCP `jp_entity_resolve`), listed first in
+  `jp-company-verify`, `jp-supplier-due-diligence` and the `jpverify` router: identify a Japanese company from an English or
+  romanized name with postal code or prefecture, or from a T-number, corporate number, LEI or securities code, with
+  English output and the legally binding Japanese name.
+
 ## 1.0.5 — 2026-11
 
 - Issuer-match examples now use a real public NTA record (T1013301046627) instead of a placeholder number.

@@ -14,7 +14,7 @@ npx skills add japanverify/jpverify-skills
 |---|---|
 | [`jpverify`](skills/jpverify/SKILL.md) | JPVerify: Japan business data for AI agents — verify Japanese companies (法人番号), qualified-invoice T-numbers (インボイス), invoice issuers and suppliers; OCR Japanese invoices, receipts and business cards; normalize and validate Japanese addresses; plus JP PINT e-invoice validation, EU VAT/Peppol, UK and SEC cross-border checks. |
 | [`jp-invoice-number-check`](skills/jp-invoice-number-check/SKILL.md) | Check Japanese qualified-invoice registration numbers (T-numbers, 適格請求書発行事業者登録番号, インボイス登録番号) against the National Tax Agency registry with JPVerify, and compare an invoice issuer's name and address with the registered record. |
-| [`jp-company-verify`](skills/jp-company-verify/SKILL.md) | Verify Japanese companies against official registries with JPVerify: corporate number (法人番号) lookup by number or company name, active/closed status, registered address, a company pre-check report with risk flags, EDINET filings, and Financial Services Agency licence checks. |
+| [`jp-company-verify`](skills/jp-company-verify/SKILL.md) | Verify Japanese companies against official registries with JPVerify: identify a Japanese company from an English or romanized name, postal code, T-number, LEI or securities code with English output; corporate number (法人番号) lookup by number or company name, active/closed status, registered address, a company pre-check report with risk flags, EDINET filings, and Financial Services Agency licence checks. |
 | [`jp-business-document-ocr`](skills/jp-business-document-ocr/SKILL.md) | Read Japanese business documents with JPVerify: billing invoice (請求書) OCR, receipt (領収書・レシート) OCR and business card (名刺) OCR into structured JSON, with local checks of dates, tax, totals and T-numbers, and optional verification of the issuer against National Tax Agency registries. |
 | [`jp-address`](skills/jp-address/SKILL.md) | Normalize, parse, validate and geocode Japanese addresses (住所の正規化・解析・検証) with JPVerify, and look up Japanese postal codes (郵便番号) — down to 丁目, block and building level, with the evidence behind each match. |
 | [`jp-supplier-due-diligence`](skills/jp-supplier-due-diligence/SKILL.md) | Run a pre-payment supplier and counterparty check with JPVerify: combine Japanese corporate-number, qualified-invoice (T-number) and address evidence for a supplier, add FSA licence and EDINET checks when relevant, and for foreign counterparties check UK Companies House, EU VAT (VIES), Peppol participant IDs and SEC EDGAR filings. |
@@ -58,5 +58,5 @@ and is documented with its price. Results are public-registry pre-checks, not KY
 
 ## License
 
-MIT. Generated from the JPVerify API catalog (version 1.0.5); report issues at https://github.com/japanverify/jpverify-skills/issues
+MIT. Generated from the JPVerify API catalog (version 1.0.6); report issues at https://github.com/japanverify/jpverify-skills/issues
 or service@jpverify.com. Privacy policy: https://api.jpverify.com/en/privacy · Terms: https://api.jpverify.com/en/terms

@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese invoice, receipt and business-card OCR / 請求書・領収書・名刺のOCR
 
-Version 1.0.5 · JPVerify · https://www.jpverify.com
+Version 1.0.6 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -28,7 +28,7 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-business-document-ocr and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-business-document-ocr/1.0.5` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jp-business-document-ocr/1.0.6` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
@@ -94,7 +94,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/extract \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.5" \
+  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.6" \
   -H "Content-Type: application/json" \
   -d '{"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"}'
 ```
@@ -105,7 +105,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/extract",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-business-document-ocr/1.0.5"},
+             "X-JPVerify-Client": "jp-business-document-ocr/1.0.6"},
     json={"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"},
     timeout=60,
 )
@@ -117,7 +117,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-invoice/extract \
-  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.5" \
+  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.6" \
   -H "Content-Type: application/json" \
   -d '{"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"}'
 ```

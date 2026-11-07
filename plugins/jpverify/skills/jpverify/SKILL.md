@@ -11,14 +11,14 @@ license: MIT
 
 # JPVerify — pick the right Japan business check
 
-Version 1.0.5 · JPVerify · https://www.jpverify.com
+Version 1.0.6 · JPVerify · https://www.jpverify.com
 
 Use this skill to route a task to the right JPVerify endpoint. For the common tasks, the focused skills have detailed workflows:
 
 | Task | Skill |
 |---|---|
 | T-number / qualified-invoice issuer checks | `jp-invoice-number-check` |
-| Japanese company, corporate number, filings, FSA licences | `jp-company-verify` |
+| Japanese company from an English name or identifier, corporate number, filings, FSA licences | `jp-company-verify` |
 | Invoice / receipt / business-card OCR | `jp-business-document-ocr` |
 | Japanese address normalization, validation, geocoding, postal codes | `jp-address` |
 | Supplier / counterparty pre-check before onboarding or payment (JP + UK, EU VAT, Peppol, SEC) | `jp-supplier-due-diligence` |
@@ -34,13 +34,14 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jpverify and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jpverify/1.0.5` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jpverify/1.0.6` on HTTP calls. Never print, log or share an API key.
 
 ## Routing / 使い分け
 
-1. **Unsure which call fits?** Ask the free MCP tool `jpverify_guide` with the task in plain words, or use the table below.
-2. **Prefer one composite call over several small ones** when it answers the question (e.g. `/jp-invoice/extract-and-verify` instead of OCR + check; `/v1/suppliers/resolve` for a supplier with several identifiers).
-3. **Batches:** up to 10 items use the `*-batch` endpoints; larger jobs (up to 1,000) use `/v1/batch-jobs`, which is x402-only and needs a caller-chosen capability token and an `Idempotency-Key` header. Always confirm the total cost with the user first.
+1. **English company name or an identifier, need the Japanese legal entity in English?** `POST /v1/jp/entities/resolve` (MCP `jp_entity_resolve`).
+2. **Unsure which call fits?** Ask the free MCP tool `jpverify_guide` with the task in plain words, or use the table below.
+3. **Prefer one composite call over several small ones** when it answers the question (e.g. `/jp-invoice/extract-and-verify` instead of OCR + check; `/v1/suppliers/resolve` for a supplier with several identifiers).
+4. **Batches:** up to 10 items use the `*-batch` endpoints; larger jobs (up to 1,000) use `/v1/batch-jobs`, which is x402-only and needs a caller-chosen capability token and an `Idempotency-Key` header. Always confirm the total cost with the user first.
 
 ## Endpoints and prices / エンドポイントと料金
 
@@ -48,6 +49,7 @@ Always send `X-JPVerify-Client: jpverify/1.0.5` on HTTP calls. Never print, log 
 
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
+| `POST /v1/jp/entities/resolve` | `jp_entity_resolve` | $0.50 | You hold an English or romanized Japanese company name, postal code, T-number, corporate number, LEI or securities code and need the Japanese legal entity, in English. | Decision (matched / likely_match / candidates), legally binding Japanese name, kana, English name with source, contract party name, status and qualified-invoice registration. |
 | `POST /jp-invoice/verify` | `jp_invoice_registration_verify` | $0.01 | You already have a Japanese T+13-digit qualified-invoice registration number. | NTA registration status, corporate number, registered name, and relevant dates. |
 | `POST /jp-invoice/check` | `jp_invoice_issuer_check` | $0.03 | You have extracted issuer fields and need T-number, company-name, and address comparison. | OCR issuer fields, NTA registry fields, comparison results, and resolved values; phone is not registry-compared. |
 | `POST /jp-invoice/verify-batch` | — | $0.05 | You need up to 10 Japanese T-number checks in one request. | One NTA registration result per T-number. |
@@ -99,6 +101,7 @@ Always send `X-JPVerify-Client: jpverify/1.0.5` on HTTP calls. Never print, log 
 
 | Endpoint | Required fields | Optional fields |
 |---|---|---|
+| `POST /v1/jp/entities/resolve` | — | `name`, `address`, `postal_code`, `prefecture`, `corporate_number`, `t_number`, `lei`, `securities_code`, `duns`, `max_candidates` |
 | `POST /jp-invoice/verify` | `registration_number` | `response_language` |
 | `POST /jp-invoice/check` | `registration_number` | `supplier_name`, `address`, `response_language` |
 | `POST /jp-invoice/verify-batch` | `registration_numbers` | `response_language` |
@@ -152,26 +155,26 @@ Spending rules:
 - Do not call the same paid endpoint repeatedly for the same input; reuse the result you already have.
 - Prices in the endpoint table are per successful call in USD (the same with an API key or x402).
 
-## Example / 呼び出し例 (`POST /jp-invoice/verify`)
+## Example / 呼び出し例 (`POST /v1/jp/entities/resolve`)
 
 API key:
 
 ```bash
-curl -X POST https://api.jpverify.com/jp-invoice/verify \
+curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jpverify/1.0.5" \
+  -H "X-JPVerify-Client: jpverify/1.0.6" \
   -H "Content-Type: application/json" \
-  -d '{"registration_number": "T1013301046627", "response_language": "both"}'
+  -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
 
 ```python
 import requests
 
 response = requests.post(
-    "https://api.jpverify.com/jp-invoice/verify",
+    "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jpverify/1.0.5"},
-    json={"registration_number": "T1013301046627", "response_language": "both"},
+             "X-JPVerify-Client": "jpverify/1.0.6"},
+    json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
 print(response.status_code, response.json())
@@ -181,10 +184,10 @@ x402 (no account):
 
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
-curl -i -X POST https://api.jpverify.com/jp-invoice/verify \
-  -H "X-JPVerify-Client: jpverify/1.0.5" \
+curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
+  -H "X-JPVerify-Client: jpverify/1.0.6" \
   -H "Content-Type: application/json" \
-  -d '{"registration_number": "T1013301046627", "response_language": "both"}'
+  -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
 
 Full SDK examples (Python `x402`, JavaScript `@x402/fetch`): https://api.jpverify.com/docs/x402

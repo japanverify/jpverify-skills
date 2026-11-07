@@ -12,7 +12,7 @@ license: MIT
 
 # Supplier and counterparty pre-check / 取引先の事前確認
 
-Version 1.0.5 · JPVerify · https://www.jpverify.com
+Version 1.0.6 · JPVerify · https://www.jpverify.com
 
 A workflow skill: it chains several JPVerify checks into one evidence summary for a human decision. It does **not** approve payments or vendors by itself.
 
@@ -28,18 +28,19 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-supplier-due-diligence/1.0.5"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-supplier-due-diligence/1.0.6"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-supplier-due-diligence and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.5` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.6` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
 Collect what you know first: legal name, address, corporate number (法人番号), T-number, and for foreign parties the country, company number, VAT ID, Peppol ID or SEC CIK. Ask the user for missing identifiers rather than guessing them.
 
-**Japanese supplier** (typical cost $0.01–$0.10):
+**Japanese supplier** (typical cost $0.01–$0.10; $0.50 more if you start from an English name):
+0. Only an English or romanized name? `POST /v1/jp/entities/resolve` (MCP `jp_entity_resolve`) with the name and the postal code or prefecture first, confirm the candidate with the user, then continue with its `corporate_number`.
 1. `POST /v1/suppliers/resolve` (MCP `jp_supplier_resolve`) with every identifier you have — one call combines corporate-number, T-number and address evidence. Stop here if `decision` is `verified` and the user only needs identity.
 2. If an invoice is involved and its issuer details differ from the supplier record: `POST /jp-invoice/check`.
 3. Only when relevant to the business: `POST /jp-regulated-entity/verify` (licensed financial businesses) and `GET /jp-company/filings` (listed companies).
@@ -55,6 +56,7 @@ Collect what you know first: legal name, address, corporate number (法人番号
 
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
+| `POST /v1/jp/entities/resolve` | `jp_entity_resolve` | $0.50 | You hold an English or romanized Japanese company name, postal code, T-number, corporate number, LEI or securities code and need the Japanese legal entity, in English. | Decision (matched / likely_match / candidates), legally binding Japanese name, kana, English name with source, contract party name, status and qualified-invoice registration. |
 | `POST /v1/suppliers/resolve` | `jp_supplier_resolve` | $0.01 | You need one coverage-aware supplier check combining company, qualified-invoice, and address evidence; optionally includes projected gBizINFO activity evidence when the internal feature flag is enabled. | Independent evidence checks, source versions, and a resolved/ambiguous/not-found/insufficient-coverage status; optional gBizINFO is projected enrichment inside this response, not a standalone source or raw-response resale. Not a legal or KYB determination. |
 | `POST /jp-invoice/check` | `jp_invoice_issuer_check` | $0.03 | You have extracted issuer fields and need T-number, company-name, and address comparison. | OCR issuer fields, NTA registry fields, comparison results, and resolved values; phone is not registry-compared. |
 | `POST /jp-regulated-entity/verify` | — | $0.03 | You need to verify an entity against the covered Japanese FSA financial instruments, funds transfer, or crypto-asset exchange datasets. | Coverage-aware licensing decision, freshness, identity match, license evidence, and review warnings; not a legal unlicensed determination. |
@@ -67,6 +69,7 @@ Collect what you know first: legal name, address, corporate number (法人番号
 
 | Endpoint | Required fields | Optional fields |
 |---|---|---|
+| `POST /v1/jp/entities/resolve` | — | `name`, `address`, `postal_code`, `prefecture`, `corporate_number`, `t_number`, `lei`, `securities_code`, `duns`, `max_candidates` |
 | `POST /v1/suppliers/resolve` | — | `name`, `corporate_number`, `address`, `registration_number`, `t_number`, `country_code`, `identifiers`, `response_language` |
 | `POST /jp-invoice/check` | `registration_number` | `supplier_name`, `address`, `response_language` |
 | `POST /jp-regulated-entity/verify` | — | `corporate_number`, `name`, `address`, `phone`, `categories`, `response_language` |
@@ -104,26 +107,26 @@ Spending rules:
 - Do not call the same paid endpoint repeatedly for the same input; reuse the result you already have.
 - Prices in the endpoint table are per successful call in USD (the same with an API key or x402).
 
-## Example / 呼び出し例 (`POST /v1/suppliers/resolve`)
+## Example / 呼び出し例 (`POST /v1/jp/entities/resolve`)
 
 API key:
 
 ```bash
-curl -X POST https://api.jpverify.com/v1/suppliers/resolve \
+curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.5" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.6" \
   -H "Content-Type: application/json" \
-  -d '{"name": "株式会社ABC", "registration_number": "T1013301046627", "response_language": "both"}'
+  -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
 
 ```python
 import os, requests
 
 response = requests.post(
-    "https://api.jpverify.com/v1/suppliers/resolve",
+    "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.5"},
-    json={"name": "株式会社ABC", "registration_number": "T1013301046627", "response_language": "both"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.6"},
+    json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
 print(response.status_code, response.json())
@@ -133,10 +136,10 @@ x402 (no account):
 
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
-curl -i -X POST https://api.jpverify.com/v1/suppliers/resolve \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.5" \
+curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.6" \
   -H "Content-Type: application/json" \
-  -d '{"name": "株式会社ABC", "registration_number": "T1013301046627", "response_language": "both"}'
+  -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
 
 Full SDK examples (Python `x402`, JavaScript `@x402/fetch`): https://api.jpverify.com/docs/x402

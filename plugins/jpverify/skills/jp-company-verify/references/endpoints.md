@@ -6,6 +6,7 @@ Generated from the live JPVerify catalog. Prices are USD per successful call (th
 
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
+| `POST /v1/jp/entities/resolve` | `jp_entity_resolve` | $0.50 | You hold an English or romanized Japanese company name, postal code, T-number, corporate number, LEI or securities code and need the Japanese legal entity, in English. | Decision (matched / likely_match / candidates), legally binding Japanese name, kana, English name with source, contract party name, status and qualified-invoice registration. |
 | `POST /jp-company/verify` | `jp_company_verify` | $0.005 | You need a Japanese company or corporate-number lookup. | Corporate number, registered legal name/address, active or closed status, and match evidence. |
 | `POST /jp-company/report` | — | $0.05 | You need a Japan company registry pre-check with risk flags. | Registry identity, status, evidence, and risk flags; not full KYC/KYB. |
 | `POST /jp-company/verify-batch` | — | $0.05 | You need up to 10 Japanese company or corporate-number lookups in one request. | One result per input with match status and registry evidence. |
@@ -16,6 +17,7 @@ Generated from the live JPVerify catalog. Prices are USD per successful call (th
 
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
+| `POST /v1/jp/entities/resolve` | `jp_entity_resolve` | $0.50 | 英語名・ローマ字・郵便番号・T番号・法人番号・LEI・証券コードから日本の法人を特定したい場合。 | 判定、正式な日本語商号、読み、出典付き英語名、契約当事者名、状態、適格請求書登録を返します。 |
 | `POST /jp-company/verify` | `jp_company_verify` | $0.005 | 日本企業または法人番号を検索・照合したい場合。 | 法人番号、登記上の法人名・住所、活動状態、一致根拠を返します。 |
 | `POST /jp-company/report` | — | $0.05 | 日本企業の登記情報に基づく事前確認とリスクフラグが必要な場合。 | 登記上の企業情報、状態、根拠、リスクフラグを返します。完全なKYC/KYBではありません。 |
 | `POST /jp-company/verify-batch` | — | $0.05 | 最大10件の日本企業・法人番号を1回のリクエストで照合したい場合。 | 入力ごとの一致状態と登記根拠を返します。 |
