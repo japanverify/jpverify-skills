@@ -3,8 +3,7 @@ name: jp-supplier-due-diligence
 description: >-
   Run a pre-payment supplier and counterparty check with JPVerify: combine Japanese corporate-number,
   qualified-invoice (T-number) and address evidence for a supplier, add FSA licence and EDINET checks
-  when relevant, and for foreign counterparties check UK Companies House, EU VAT (VIES), Peppol
-  participant IDs and SEC EDGAR filings. Use when a task involves onboarding a vendor, approving an
+  when relevant. Covers Japanese suppliers only. Use when a task involves onboarding a vendor, approving an
   invoice for payment, checking a vendor master in bulk, or deciding whether a counterparty needs
   manual review. Paid per call.
 license: MIT
@@ -12,14 +11,13 @@ license: MIT
 
 # Supplier and counterparty pre-check / 取引先の事前確認
 
-Version 1.0.7 · JPVerify · https://www.jpverify.com
+Version 1.0.8 · JPVerify · https://www.jpverify.com
 
 A workflow skill: it chains several JPVerify checks into one evidence summary for a human decision. It does **not** approve payments or vendors by itself.
 
 ## When to use / いつ使うか
 
 - Onboarding a Japanese supplier, or approving a Japanese invoice for payment.
-- Checking a foreign counterparty (UK company, EU VAT-registered business, Peppol participant, US SEC registrant).
 - Preparing an evidence summary for accounts payable, procurement or compliance review.
 
 ## Connect / 接続
@@ -28,27 +26,22 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-supplier-due-diligence/1.0.7"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-supplier-due-diligence/1.0.8"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-supplier-due-diligence and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.7` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.8` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
-Collect what you know first: legal name, address, corporate number (法人番号), T-number, and for foreign parties the country, company number, VAT ID, Peppol ID or SEC CIK. Ask the user for missing identifiers rather than guessing them.
+Collect what you know first: legal name, address, corporate number (法人番号), T-number, or the English name and postal code. Ask the user for missing identifiers rather than guessing them.
 
-**Japanese supplier** (typical cost $0.01–$0.10; $0.50 more if you start from an English name):
+**Japanese supplier** (typical cost $0.10–$0.20; $0.50 more if you start from an English name):
 0. Only an English or romanized name? `POST /v1/jp/entities/resolve` (MCP `jp_entity_resolve`) with the name and the postal code or prefecture first, confirm the candidate with the user, then continue with its `corporate_number`.
 1. `POST /v1/suppliers/resolve` (MCP `jp_supplier_resolve`) with every identifier you have — one call combines corporate-number, T-number and address evidence. Stop here if `decision` is `verified` and the user only needs identity.
 2. If an invoice is involved and its issuer details differ from the supplier record: `POST /jp-invoice/check`.
 3. Only when relevant to the business: `POST /jp-regulated-entity/verify` (licensed financial businesses) and `GET /jp-company/filings` (listed companies).
-
-**Foreign counterparty** (typical cost $0.04–$0.15):
-1. UK company: `POST /v1/entities/resolve-cross-border` with `country_code: "GB"` and `identifiers.company_number` (or a name).
-2. EU VAT / Peppol: `POST /v1/invoices/counterparty-check` (MCP `jp_counterparty_check`) with `vat_id` (with country prefix) and/or `participant_id` (`scheme::value`), plus `name` to compare.
-3. US listed company: `GET /v1/entities/{cik}/filing-risk-snapshot`.
 
 **Many suppliers:** up to 10 per call with the `*-batch` endpoints, or up to 1,000 in one x402 batch job (`/v1/batch-jobs`, operation `supplier_resolve`). State the count and total price and get approval first.
 
@@ -57,13 +50,10 @@ Collect what you know first: legal name, address, corporate number (法人番号
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
 | `POST /v1/jp/entities/resolve` | `jp_entity_resolve` | $0.50 | You hold an English or romanized Japanese company name, postal code, T-number, corporate number, LEI or securities code and need the Japanese legal entity, in English. | Decision (matched / likely_match / candidates), legally binding Japanese name, kana, English name with source, contract party name, status and qualified-invoice registration. |
-| `POST /v1/suppliers/resolve` | `jp_supplier_resolve` | $0.01 | You need one coverage-aware supplier check combining company, qualified-invoice, and address evidence; optionally includes projected gBizINFO activity evidence when the internal feature flag is enabled. | Independent evidence checks, source versions, and a resolved/ambiguous/not-found/insufficient-coverage status; optional gBizINFO is projected enrichment inside this response, not a standalone source or raw-response resale. Not a legal or KYB determination. |
+| `POST /v1/suppliers/resolve` | `jp_supplier_resolve` | $0.10 | You need one coverage-aware supplier check combining company, qualified-invoice, and address evidence; optionally includes projected gBizINFO activity evidence when the internal feature flag is enabled. | Independent evidence checks, source versions, and a resolved/ambiguous/not-found/insufficient-coverage status; optional gBizINFO is projected enrichment inside this response, not a standalone source or raw-response resale. Not a legal or KYB determination. |
 | `POST /jp-invoice/check` | `jp_invoice_issuer_check` | $0.03 | You have extracted issuer fields and need T-number, company-name, and address comparison. | OCR issuer fields, NTA registry fields, comparison results, and resolved values; phone is not registry-compared. |
 | `POST /jp-regulated-entity/verify` | — | $0.03 | You need to verify an entity against the covered Japanese FSA financial instruments, funds transfer, or crypto-asset exchange datasets. | Coverage-aware licensing decision, freshness, identity match, license evidence, and review warnings; not a legal unlicensed determination. |
 | `GET /jp-company/filings` | — | $0.01 | You need EDINET filing metadata for a Japanese company by corporate number, EDINET code, or security code. | Filing metadata, correction/withdrawal relationships, freshness, and official evidence references; raw files remain internal. |
-| `POST /v1/entities/resolve-cross-border` | — | $0.04 | You need a JP or GB entity identity pre-check from one country-routed API; the first release uses NTA/gBizINFO for JP and Companies House for GB. | Projected entity identity, evidence checks, source freshness, coverage, conflicts, and a conservative confidence band; raw upstream responses are never returned. |
-| `POST /v1/invoices/counterparty-check` | `jp_counterparty_check` | $0.05 | You need separate EU VAT validity, returned-name entity matching, and Peppol participant discoverability evidence. | Projected VIES and Peppol evidence only; VIES is known-ID validation and member-state outages are insufficient coverage. |
-| `GET /v1/entities/{cik}/filing-risk-snapshot` | — | $0.05 | You need objective recent SEC EDGAR filing and XBRL availability metadata for a known CIK. | Recent filing metadata and objective disclosure signals; never a credit rating or investment recommendation. |
 
 ### Request fields / リクエスト項目
 
@@ -74,9 +64,6 @@ Collect what you know first: legal name, address, corporate number (法人番号
 | `POST /jp-invoice/check` | `registration_number` | `supplier_name`, `address`, `response_language` |
 | `POST /jp-regulated-entity/verify` | — | `corporate_number`, `name`, `address`, `phone`, `categories`, `response_language` |
 | `GET /jp-company/filings` | — | `corporate_number`, `edinet_code`, `security_code`, `date_from`, `date_to`, `doc_type_code`, `form_code`, `include_withdrawn`, `limit`, `cursor`, `response_language` |
-| `POST /v1/entities/resolve-cross-border` | `country_code` | `name`, `address`, `identifiers`, `response_language` |
-| `POST /v1/invoices/counterparty-check` | — | `vat_id`, `participant_id`, `name`, `country_code`, `response_language` |
-| `GET /v1/entities/{cik}/filing-risk-snapshot` | `entity_id` | — |
 
 Where no field is required, send at least one identifier or input (for OCR: `text`, `file_url` or `image_base64`; for business cards: `front_image_url` or `front_image_base64`). `response_language` is `ja`, `en` or `both` (default `both`).
 
@@ -114,7 +101,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.7" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.8" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -125,7 +112,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.7"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.8"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -137,7 +124,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.7" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.8" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```

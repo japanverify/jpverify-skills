@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.8 — 2026-11
+
+- English company lookup now finds brand, short and former names (Sony, Uniqlo, MUJI, Totsuko) from Wikidata; unions
+  and associations no longer outrank companies with the same reading.
+- `/jp-company/report` ($0.10) adds `profile` (capital, employees, website, representative), `listing` (securities code,
+  latest EDINET filing), `regulated` (FSA licences) and `former_names`. `/v1/suppliers/resolve` is now $0.10.
+- `/jp-invoice/extract-and-verify` and `/v1/invoices/issuer-match/extract` return `invoice_eligibility` for input tax
+  credit (eligible / not_eligible / needs_review).
+- Retired: UK Companies House, EU VIES / Peppol and SEC EDGAR checks (`/v1/entities/resolve-cross-border`,
+  `/v1/invoices/counterparty-check`, `/v1/entities/{cik}/filing-risk-snapshot`, MCP `jp_counterparty_check`).
+  JPVerify now covers Japan only.
+
 ## 1.0.7 — 2026-11
 
 - English output is now filled in across the API, and the skills say where it comes from. English company names: NTA

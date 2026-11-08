@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese invoice, receipt and business-card OCR / 請求書・領収書・名刺のOCR
 
-Version 1.0.7 · JPVerify · https://www.jpverify.com
+Version 1.0.8 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -26,19 +26,19 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-business-document-ocr/1.0.7"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-business-document-ocr/1.0.8"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-business-document-ocr and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-business-document-ocr/1.0.7` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-business-document-ocr/1.0.8` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
 1. **Confirm the document type** (invoice vs receipt vs business card) and that the user may share it. Business cards contain personal data.
 2. **Choose the call.**
    - Invoice, fields and local checks only → `POST /jp-invoice/extract` (MCP `jp_invoice_extract`).
-   - Invoice + issuer verification in the NTA registry → `POST /jp-invoice/extract-and-verify` (one call; do not also call `/jp-invoice/check`).
+   - Invoice + issuer verification in the NTA registry, or the question "can we deduct the input consumption tax on this invoice?" → `POST /jp-invoice/extract-and-verify` (one call; do not also call `/jp-invoice/check`).
    - Receipt → `POST /jp-receipt/extract` (a T-number found on the receipt is verified).
    - Business card → `POST /jp-business-card/extract`; add company registry enrichment with `POST /jp-business-card/extract-and-enrich` only if the user needs the corporate number or invoice registration.
 3. **Report** the extracted fields together with their status, and list anything that needs review.
@@ -48,7 +48,7 @@ Always send `X-JPVerify-Client: jp-business-document-ocr/1.0.7` on HTTP calls. N
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
 | `POST /jp-invoice/extract` | `jp_invoice_extract` | $0.01 | You need Japanese billing-invoice OCR and deterministic quality checks without registry lookup. | OCR-derived invoice fields plus format, arithmetic, tax, completeness, and review status. |
-| `POST /jp-invoice/extract-and-verify` | `jp_invoice_extract_and_verify` | $0.05 | You need invoice OCR and issuer name/address comparison or completion using NTA public data. | OCR values, registry values, resolved issuer values, validation, and an explicit review signal. |
+| `POST /jp-invoice/extract-and-verify` | `jp_invoice_extract_and_verify` | $0.05 | You need invoice OCR and issuer name/address comparison or completion using NTA public data. | OCR values, registry values, resolved issuer values, validation, an explicit review signal, and invoice_eligibility (eligible / not_eligible / needs_review for input tax credit, with the seven qualified-invoice items and registration on the transaction date). |
 | `POST /jp-receipt/extract` | `jp_receipt_extract` | $0.03 | You need Japanese receipt or 領収書 OCR with local tax, amount, T-number, and format checks. | Structured receipt fields, deterministic validation, field status, and review signals. |
 | `POST /jp-business-card/extract` | `jp_business_card_extract` (enrich=false) | $0.03 | You need only the person, role, department, company, phone, email, or address printed on a Japanese business card. | Card-printed contact fields only; no corporate-number or NTA issuer verification. |
 | `POST /jp-business-card/extract-and-enrich` | `jp_business_card_extract` (enrich=true) | $0.10 | You need business-card OCR plus Japanese corporate-number and qualified-invoice enrichment. | Separate card OCR values and registry-resolved company values; registry pre-check, not full KYB. |
@@ -72,6 +72,7 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 - `validation.status` is the overall result (`passed`, or a status needing attention); `validation.checks` lists each check (required fields, T-number format, date, arithmetic, tax).
 - `field_status` says how each field is supported: `ocr_only` (read but not cross-checked), `format_valid`, `corroborated` (consistent with other fields), etc. Treat `ocr_only` values as unconfirmed.
 - If `manual_review_required` is true, show the fields and the failing checks to the user; do not "fix" amounts or numbers yourself.
+- `invoice_eligibility` (extract-and-verify) answers input-tax-credit eligibility: `eligible`, `not_eligible` (the issuer was not registered on the transaction date, or the T-number is invalid) or `needs_review` (an item was not read). `requirements` lists the seven qualified-invoice items; `summary_en` is a one-line conclusion for the user. It is an evidence check, not tax advice — a missing item may be printed but unread, and transitional deductions for non-registered suppliers are not evaluated.
 - With business cards, printed values (`card`) and registry values (enrichment) are kept separate; do not merge them silently.
 
 ## Errors and spending / エラーと費用
@@ -97,7 +98,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/extract \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.7" \
+  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.8" \
   -H "Content-Type: application/json" \
   -d '{"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"}'
 ```
@@ -108,7 +109,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/extract",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-business-document-ocr/1.0.7"},
+             "X-JPVerify-Client": "jp-business-document-ocr/1.0.8"},
     json={"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"},
     timeout=60,
 )
@@ -120,7 +121,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-invoice/extract \
-  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.7" \
+  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.8" \
   -H "Content-Type: application/json" \
   -d '{"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"}'
 ```

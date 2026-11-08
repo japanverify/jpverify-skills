@@ -13,7 +13,7 @@ license: MIT
 
 # Japanese T-number check / インボイス登録番号の確認
 
-Version 1.0.7 · JPVerify · https://www.jpverify.com
+Version 1.0.8 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -30,12 +30,12 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-invoice-number-check/1.0.7"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-invoice-number-check/1.0.8"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-invoice-number-check and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-invoice-number-check/1.0.7` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-invoice-number-check/1.0.8` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
@@ -76,6 +76,7 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 - `/jp-invoice/verify`: `status` is `registered`, `registered_until_expiry`, `expired`, `cancelled`, `deleted` or `not_found`; `verdict` is `qualified` only while the registration is valid. `format_valid` / `checksum_valid` false means the number itself is wrong (check for a typo before concluding anything).
 - `/jp-invoice/check`: `decision` is `verified`, `manual_review` or `not_found`. `company_match` and `address_match` compare the invoice's issuer with the registered record; `risk_flags` lists differences such as `supplier_name_differs_from_registered_legal_name`, `address_mismatch` or `invoice_cancelled`. A trade name differing from the legal name is common — present it as a difference to confirm, not as fraud.
 - `/v1/invoices/issuer-match` and `/extract`: `decision` is `issuer_matched`, `supplier_mismatch`, `document_conflict`, `registration_problem`, `insufficient_evidence` or `source_unavailable`. Only `issuer_matched` confirms the invoice issuer against the expected identifiers, using registration status at the time of the check (`dates.date_check` is `not_performed`: no as-of-invoice-date judgement). `values` keeps the invoice, expected and registry values side by side; `reasons` lists stable codes such as `document_t_number_differs_from_expected` or `issuer_address_differs_from_registry`; `next_actions` says what data to add. Without `expected`, the result is `insufficient_evidence` with the registry evidence still returned. This is not a payment-approval or tax-deduction decision.
+- `/v1/invoices/issuer-match/extract` also returns `invoice_eligibility` (`eligible`, `not_eligible`, `needs_review`) for input tax credit, with the seven qualified-invoice items and whether the issuer was registered on the transaction date. Report `summary_en`; it is not tax advice.
 - For individuals (sole proprietors) the registry often does not publish an address, and the published name may differ from the trade name on the invoice; say so instead of treating missing or different fields as a mismatch.
 
 ## Errors and spending / エラーと費用
@@ -101,7 +102,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/verify \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.7" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.8" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```
@@ -112,7 +113,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/verify",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.0.7"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.0.8"},
     json={"registration_number": "T1013301046627", "response_language": "both"},
     timeout=60,
 )
@@ -124,7 +125,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-invoice/verify \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.7" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.8" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```
