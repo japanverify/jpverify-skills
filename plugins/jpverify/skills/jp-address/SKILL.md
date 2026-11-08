@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese addresses / 日本の住所
 
-Version 1.0.8 · JPVerify · https://www.jpverify.com
+Version 1.0.9 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -28,7 +28,7 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-address and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-address/1.0.8` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jp-address/1.0.9` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
@@ -71,6 +71,7 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 - `normalize` / `geocode`: `match_level`, `verified_level` and `precision_satisfied` tell how deep the match went; `candidate_count` above 1 means the address is ambiguous — show the candidates instead of choosing one.
 - A missing postal code is **not** inferred by `normalize`; use `postal-lookup` if the user needs it.
 - `normalized_en` uses Japan Post's official romanization (KEN_ALL_ROME), e.g. `1-9-1 Marunochi, Chiyoda-ku, Tokyo 100-0005`, with `normalized_en_source: japan_post_romaji` and a `normalized_en_confidence`. Japan Post's spelling is kept as published (no long-vowel marks), and building names are not translated. `/jp-address/parse` also returns `components_en`, and each `/jp-address/postal-lookup` match returns `prefecture_en`, `city_en` and `town_en`. Nothing is machine-translated.
+- `normalized_en_common` gives the spelling people usually write where Japan Post's differs (丸の内: Marunouchi rather than Japan Post's Marunochi); use it for display and keep `normalized_en` for matching Japan Post data.
 
 ## Errors and spending / エラーと費用
 
@@ -95,7 +96,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/jp-address/normalize \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-address/1.0.8" \
+  -H "X-JPVerify-Client: jp-address/1.0.9" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"}'
 ```
@@ -106,7 +107,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-address/normalize",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-address/1.0.8"},
+             "X-JPVerify-Client": "jp-address/1.0.9"},
     json={"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"},
     timeout=60,
 )
@@ -118,7 +119,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-address/normalize \
-  -H "X-JPVerify-Client: jp-address/1.0.8" \
+  -H "X-JPVerify-Client: jp-address/1.0.9" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"}'
 ```

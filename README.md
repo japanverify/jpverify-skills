@@ -58,5 +58,5 @@ and is documented with its price. Results are public-registry pre-checks, not KY
 
 ## License
 
-MIT. Generated from the JPVerify API catalog (version 1.0.8); report issues at https://github.com/japanverify/jpverify-skills/issues
+MIT. Generated from the JPVerify API catalog (version 1.0.9); report issues at https://github.com/japanverify/jpverify-skills/issues
 or service@jpverify.com. Privacy policy: https://api.jpverify.com/en/privacy · Terms: https://api.jpverify.com/en/terms

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.9 — 2026-11
+
+- New prices: `/v1/jp/entities/resolve` $0.25 (was $0.50), `/jp-invoice/extract-and-verify` $0.10, `/jp-invoice/extract`
+  $0.03, `/jp-company/verify` $0.01, company and invoice batch verification $0.08 per batch of up to 10.
+- English company lookup also takes an English or Japanese `address` (municipality and town are compared), a `website`
+  or company `email` domain (a website alone can find the company), and resolves an LEI offline from GLEIF data; GLEIF
+  English legal names are a new English-name source (`gleif`).
+- `decision_summary`: one decision vocabulary (`verified`, `likely_match`, `candidates`, `not_found`, `manual_review`,
+  `insufficient_coverage`) across company, invoice, supplier, entity, issuer-match and address results.
+- `jp-address`: `normalized_en_common` with the usual spelling (Marunouchi).
+
 ## 1.0.8 — 2026-11
 
 - English company lookup now finds brand, short and former names (Sony, Uniqlo, MUJI, Totsuko) from Wikidata; unions
