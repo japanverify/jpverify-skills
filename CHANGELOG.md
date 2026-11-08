@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.7 — 2026-11
+
+- English output is now filled in across the API, and the skills say where it comes from. English company names: NTA
+  official, then the company's EDINET English name, then a romanized reading. English addresses: official, or Japan Post's
+  romanization (`*_source: japan_post_romaji`). `legal_name_ja` (the Japanese registered name) is always returned and is
+  the name to use on legal documents. `jp-address`: `/jp-address/parse` returns `normalized_en` and `components_en`, and
+  postal-lookup matches return `prefecture_en`, `city_en`, `town_en`.
+
 ## 1.0.6 — 2026-11
 
 - New English entity resolve endpoint `POST /v1/jp/entities/resolve` ($0.50, MCP `jp_entity_resolve`), listed first in

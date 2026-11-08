@@ -11,7 +11,7 @@ license: MIT
 
 # JPVerify — pick the right Japan business check
 
-Version 1.0.6 · JPVerify · https://www.jpverify.com
+Version 1.0.7 · JPVerify · https://www.jpverify.com
 
 Use this skill to route a task to the right JPVerify endpoint. For the common tasks, the focused skills have detailed workflows:
 
@@ -34,7 +34,7 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jpverify and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jpverify/1.0.6` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jpverify/1.0.7` on HTTP calls. Never print, log or share an API key.
 
 ## Routing / 使い分け
 
@@ -55,7 +55,7 @@ Always send `X-JPVerify-Client: jpverify/1.0.6` on HTTP calls. Never print, log 
 | `POST /jp-invoice/verify-batch` | — | $0.05 | You need up to 10 Japanese T-number checks in one request. | One NTA registration result per T-number. |
 | `POST /v1/invoices/issuer-match` | `jp_invoice_issuer_match` | $0.05 | Match structured invoice fields against supplier master data. | Issuer decision and separate document, expected and registry evidence. |
 | `POST /v1/invoices/issuer-match/extract` | `jp_invoice_issuer_match_extract` | $0.10 | Read an invoice document before matching it against supplier master data. | Issuer decision and separate document, expected and registry evidence. |
-| `POST /jp-company/verify` | `jp_company_verify` | $0.005 | You need a Japanese company or corporate-number lookup. | Corporate number, registered legal name/address, active or closed status, and match evidence. |
+| `POST /jp-company/verify` | `jp_company_verify` | $0.005 | You need a Japanese company or corporate-number lookup. | Corporate number, registered Japanese legal name (legal_name_ja) and address, English name (NTA official, EDINET, or romanized reading) and English address (official or Japan Post romanization) with their sources, active or closed status, and match evidence. |
 | `POST /jp-company/report` | — | $0.05 | You need a Japan company registry pre-check with risk flags. | Registry identity, status, evidence, and risk flags; not full KYC/KYB. |
 | `POST /jp-company/verify-batch` | — | $0.05 | You need up to 10 Japanese company or corporate-number lookups in one request. | One result per input with match status and registry evidence. |
 | `POST /v1/suppliers/resolve` | `jp_supplier_resolve` | $0.01 | You need one coverage-aware supplier check combining company, qualified-invoice, and address evidence; optionally includes projected gBizINFO activity evidence when the internal feature flag is enabled. | Independent evidence checks, source versions, and a resolved/ambiguous/not-found/insufficient-coverage status; optional gBizINFO is projected enrichment inside this response, not a standalone source or raw-response resale. Not a legal or KYB determination. |
@@ -76,9 +76,9 @@ Always send `X-JPVerify-Client: jpverify/1.0.6` on HTTP calls. Never print, log 
 
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
-| `POST /jp-address/normalize` | `jp_address_normalize` | $0.005 | You need Japanese address normalization or standardization, whether or not the input contains a postal code. | Normalized prefecture/city/town/chome/block/lot/house components, parser confidence, match hierarchy, geocoder evidence, and postal-code evidence when a postal code is supplied. It does not infer a missing postal code. |
-| `POST /jp-address/parse` | — | $0.005 | You need Japanese address components such as prefecture, city, town, chome, block, lot, or house without postal lookup or geocoding. | Parser-only components, normalized value, chome/block/lot/house fields, normalization changes, unparsed fragments, parser status, and parser confidence. Postal and geocoder evidence are not returned. |
-| `POST /jp-address/postal-lookup` | — | $0.001 | You need a Japan Post postal-code lookup or reverse lookup from a postal code or administrative address. | Japan Post local-snapshot matches with postal code, prefecture, city, town, kana, confidence, source, data version, and candidate count. |
+| `POST /jp-address/normalize` | `jp_address_normalize` | $0.005 | You need Japanese address normalization or standardization, whether or not the input contains a postal code. | Normalized prefecture/city/town/chome/block/lot/house components, an English address from Japan Post romanization, parser confidence, match hierarchy, geocoder evidence, and postal-code evidence when a postal code is supplied. It does not infer a missing postal code. |
+| `POST /jp-address/parse` | — | $0.005 | You need Japanese address components such as prefecture, city, town, chome, block, lot, or house without postal lookup or geocoding. | Parser-only components, normalized value, chome/block/lot/house fields, English address and components from Japan Post romanization, normalization changes, unparsed fragments, parser status, and parser confidence. Postal and geocoder evidence are not returned. |
+| `POST /jp-address/postal-lookup` | — | $0.001 | You need a Japan Post postal-code lookup or reverse lookup from a postal code or administrative address. | Japan Post local-snapshot matches with postal code, prefecture, city, town, kana, Japan Post romanized prefecture/city/town, confidence, source, data version, and candidate count. |
 | `POST /jp-address/geocode` | — | $0.005 | You need Japanese forward-geocoding candidates, coordinates, address IDs, or hierarchy levels. The required hierarchy is inferred from the input. | Provider-neutral Jageocoder candidates with normalized address, coordinates, address ID, match level, granularity, confidence, reasons, unmatched tails, and dictionary status. Level 5/6 is oaza/aza, 7 is block, and 8 is building or house node when covered. City-level or town-prefix candidates remain partial; town-level results are not door-number or coordinate accuracy claims. |
 | `POST /jp-address/validate` | `jp_address_validate` | $0.005 | You need one evidence-based Japanese address quality decision combining parsed address, postal evidence, and geocoder evidence. | Exact, partial, ambiguous, conflict, or unverified status with accepted hierarchy, confidence signals, validation scope, and reasons. |
 
@@ -137,7 +137,7 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 
 - Every registry result names its `source` and the as-of date of the data. Quote them when you report.
 - Check `status` / `decision`, `risk_flags` and `manual_review_required` before acting. Ambiguous or multiple matches go back to the user.
-- English names and addresses come only from official sources; empty means "not officially available", not an error.
+- English names: NTA official → EDINET → romanized reading; English addresses: official or Japan Post romanization. Check `*_source` before relying on one, and use `legal_name_ja` (always returned) on legal documents. Empty means no English source exists, not an error.
 
 ## Errors and spending / エラーと費用
 
@@ -162,7 +162,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jpverify/1.0.6" \
+  -H "X-JPVerify-Client: jpverify/1.0.7" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -173,7 +173,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jpverify/1.0.6"},
+             "X-JPVerify-Client": "jpverify/1.0.7"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -185,7 +185,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
-  -H "X-JPVerify-Client: jpverify/1.0.6" \
+  -H "X-JPVerify-Client: jpverify/1.0.7" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```

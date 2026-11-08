@@ -9,7 +9,7 @@ Set `JPVERIFY_API_KEY` (create one at https://www.jpverify.com/signup?ref=jp-pin
 jq -n --rawfile xml invoice.xml '{xml: $xml, registry_enhance: true}' |
   curl -X POST https://api.jpverify.com/v1/invoices/validate-jp-pint \
     -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-    -H "X-JPVerify-Client: jp-pint-invoice-validation/1.0.6" \
+    -H "X-JPVerify-Client: jp-pint-invoice-validation/1.0.7" \
     -H "Content-Type: application/json" \
     --data-binary @-
 ```
@@ -20,7 +20,7 @@ import os, pathlib, requests
 response = requests.post(
     "https://api.jpverify.com/v1/invoices/validate-jp-pint",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-pint-invoice-validation/1.0.6"},
+             "X-JPVerify-Client": "jp-pint-invoice-validation/1.0.7"},
     json={"xml": pathlib.Path("invoice.xml").read_text(encoding="utf-8"), "registry_enhance": True},
     timeout=60,
 )

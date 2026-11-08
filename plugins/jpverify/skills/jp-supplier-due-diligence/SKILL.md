@@ -12,7 +12,7 @@ license: MIT
 
 # Supplier and counterparty pre-check / 取引先の事前確認
 
-Version 1.0.6 · JPVerify · https://www.jpverify.com
+Version 1.0.7 · JPVerify · https://www.jpverify.com
 
 A workflow skill: it chains several JPVerify checks into one evidence summary for a human decision. It does **not** approve payments or vendors by itself.
 
@@ -30,7 +30,7 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-supplier-due-diligence and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.6` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.7` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
@@ -111,7 +111,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.6" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.7" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -122,7 +122,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.6"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.7"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -134,7 +134,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.6" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.7" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
