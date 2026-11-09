@@ -11,7 +11,7 @@ license: MIT
 
 # JP PINT e-invoice validation / JP PINT デジタルインボイスの検証
 
-Version 1.1.0 · JPVerify · https://www.jpverify.com
+Version 1.2.0 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -19,7 +19,7 @@ Version 1.1.0 · JPVerify · https://www.jpverify.com
 - You are building or testing e-invoice generation and want rule-level errors to fix.
 - You received an e-invoice and want schema/rule validity plus the seller's T-number status before accepting it.
 
-Not for PDF or image invoices: JPVerify does not read files. Read the invoice yourself and send its T-number, issuer name and date to `/jp-invoice/check` (skill `jp-invoice-number-check`).
+Not for PDF or image invoices: JPVerify does not read files. Read the invoice yourself and send its T-number, issuer name and date to `/v1/jp/invoices/check-issuer` (skill `jp-invoice-number-check`).
 
 ## Connect / 接続
 
@@ -27,12 +27,12 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-pint-invoice-validation/1.1.0"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-pint-invoice-validation/1.2.0"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-pint-invoice-validation and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-pint-invoice-validation/1.1.0` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-pint-invoice-validation/1.2.0` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
@@ -44,13 +44,13 @@ Always send `X-JPVerify-Client: jp-pint-invoice-validation/1.1.0` on HTTP calls.
 
 | Endpoint | MCP tool | Price (USD) | Use when | Returns |
 |---|---|---|---|---|
-| `POST /v1/invoices/validate-jp-pint` | — | $0.02 | You need offline validation of a JP PINT 1.1.3 UBL Invoice before accounting or payment workflow acceptance. | Official document_valid from pinned OASIS UBL 2.1 XSD and OpenPeppol JP PINT 1.1.3 Schematron, plus separate decision/trusted fields and optional NTA registry evidence. |
+| `POST /v1/jp/invoices/validate-pint` | — | $0.02 | You need offline validation of a JP PINT 1.1.3 UBL Invoice before accounting or payment workflow acceptance. | Official document_valid from pinned OASIS UBL 2.1 XSD and OpenPeppol JP PINT 1.1.3 Schematron, plus separate decision/trusted fields and optional NTA registry evidence. |
 
 ### Request fields / リクエスト項目
 
 | Endpoint | Required fields | Optional fields |
 |---|---|---|
-| `POST /v1/invoices/validate-jp-pint` | `xml` | `registry_enhance` |
+| `POST /v1/jp/invoices/validate-pint` | `xml` | `registry_enhance` |
 
 Where no field is required, send at least one identifier. JPVerify does not read files: send the fields you read. `response_language` is `ja`, `en` or `both` (default `both`).
 
@@ -79,16 +79,16 @@ Spending rules:
 - Do not call the same paid endpoint repeatedly for the same input; reuse the result you already have.
 - Prices in the endpoint table are per successful call in USD (the same with an API key or x402).
 
-## Example / 呼び出し例 (`POST /v1/invoices/validate-jp-pint`)
+## Example / 呼び出し例 (`POST /v1/jp/invoices/validate-pint`)
 
 API key:
 
 ```bash
 # invoice.xml: your JP PINT 1.1.3 UBL Invoice
 jq -n --rawfile xml invoice.xml '{xml: $xml, registry_enhance: true}' |
-  curl -X POST https://api.jpverify.com/v1/invoices/validate-jp-pint \
+  curl -X POST https://api.jpverify.com/v1/jp/invoices/validate-pint \
     -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-    -H "X-JPVerify-Client: jp-pint-invoice-validation/1.1.0" \
+    -H "X-JPVerify-Client: jp-pint-invoice-validation/1.2.0" \
     -H "Content-Type: application/json" \
     --data-binary @-
 ```
@@ -97,9 +97,9 @@ jq -n --rawfile xml invoice.xml '{xml: $xml, registry_enhance: true}' |
 import os, pathlib, requests
 
 response = requests.post(
-    "https://api.jpverify.com/v1/invoices/validate-jp-pint",
+    "https://api.jpverify.com/v1/jp/invoices/validate-pint",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-pint-invoice-validation/1.1.0"},
+             "X-JPVerify-Client": "jp-pint-invoice-validation/1.2.0"},
     json={"xml": pathlib.Path("invoice.xml").read_text(encoding="utf-8"), "registry_enhance": True},
     timeout=60,
 )
@@ -111,8 +111,8 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 jq -n --rawfile xml invoice.xml '{xml: $xml, registry_enhance: true}' |
-  curl -i -X POST https://api.jpverify.com/v1/invoices/validate-jp-pint \
-    -H "X-JPVerify-Client: jp-pint-invoice-validation/1.1.0" \
+  curl -i -X POST https://api.jpverify.com/v1/jp/invoices/validate-pint \
+    -H "X-JPVerify-Client: jp-pint-invoice-validation/1.2.0" \
     -H "Content-Type: application/json" \
     --data-binary @-
 ```

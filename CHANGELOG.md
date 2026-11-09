@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.2.0 — 2026-11
+
+- **New endpoint names** (`/v1/jp/{resource}/{action}`). Same prices, same request and response fields. The old paths
+  keep working until 2027-02-10 and answer with `Deprecation`, `Sunset` and `Link: rel="successor-version"` headers:
+
+  | Old | New |
+  |---|---|
+  | `/jp-company/verify`, `/jp-company/verify-batch`, `/jp-company/report` | `/v1/jp/companies/verify`, `/v1/jp/companies/verify-batch`, `/v1/jp/companies/report` |
+  | `/v1/jp/entities/resolve` (MCP `jp_entity_resolve`) | `/v1/jp/companies/resolve` (MCP `jp_company_resolve`) |
+  | `/v1/suppliers/resolve` | `/v1/jp/suppliers/resolve` |
+  | `/jp-regulated-entity/verify` | `/v1/jp/regulated-entities/verify` |
+  | `GET /jp-company/filings` | `GET /v1/jp/filings` |
+  | `/jp-invoice/verify`, `/jp-invoice/verify-batch` | `/v1/jp/invoice-registrations/verify`, `/v1/jp/invoice-registrations/verify-batch` |
+  | `/jp-invoice/check` | `/v1/jp/invoices/check-issuer` |
+  | `/v1/invoices/validate-jp-pint` | `/v1/jp/invoices/validate-pint` |
+  | `/jp-address/normalize`, `parse`, `geocode`, `validate` | `/v1/jp/addresses/normalize`, `parse`, `geocode`, `validate` |
+  | `/jp-address/postal-lookup` | `/v1/jp/postal-codes/lookup` |
+
+- Error codes are lower-case `snake_case` everywhere (`endpoint_retired`, `query_required`, `identity_required`, ...).
+- **Synchronous batches take up to 100 items and are priced per item** (was 10 items for a fixed $0.08):
+  `/v1/jp/companies/verify-batch` and `/v1/jp/invoice-registrations/verify-batch` cost $0.008 per item, so a batch is
+  never dearer than single calls. They now work with an API key as well as x402.
+- New `POST /v1/jp/invoices/check-issuer-batch`: the invoice issuer check on up to 100 invoices in one call, $0.04 per
+  invoice (single check $0.05). `items` take the same fields as `/v1/jp/invoices/check-issuer`.
+- `/v1/batch-jobs` operations `invoice_verify` and `invoice_check` are renamed `invoice_registration_verify` and
+  `invoice_issuer_check` (old names accepted until 2027-02-10). An unpaid job is held for 30 minutes (was 7 days);
+  paid jobs and their results are still kept for 7 days.
+
 ## 1.1.0 — 2026-11
 
 - **Breaking: document OCR is retired.** JPVerify no longer reads files. `/jp-invoice/extract`, `/jp-receipt/extract`,
