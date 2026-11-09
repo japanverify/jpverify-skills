@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.10 — 2026-11
+
+- English addresses report `completeness` (`complete` / `partial` / `unavailable`) separately from confidence. With
+  `response_language=en`, a partial English address no longer replaces `address`; the Japanese original stays. Supplier
+  checks (`address_en_completeness`) and the English company lookup (`address.en_completeness`) carry the same signal.
+  Town names with a space in Japan Post data (上鳥羽 鉾立町) now romanize; numeric floors and rooms render as `Floor 25`,
+  `Room 806`.
+- `/jp-company/verify`, `/jp-company/report` and `/v1/suppliers/resolve` search registered Japanese names only. An
+  English or romanized name that is not found now says so: risk flag / reason `english_name_not_in_registry_index`
+  plus `next_step` pointing to `/v1/jp/entities/resolve`.
+- Romanized company names keep long vowels (`Yunikoon Paatonaazu`, not `Yuniko Npa Tona Zu`).
+- Invoice OCR: printed issuer labels (`発行者:`) are removed from `supplier_name` and from issuer-match inputs, which
+  removes false `document_conflict` results; date lines are no longer read as line items.
+
 ## 1.0.9 — 2026-11
 
 - New prices: `/v1/jp/entities/resolve` $0.25 (was $0.50), `/jp-invoice/extract-and-verify` $0.10, `/jp-invoice/extract`

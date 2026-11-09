@@ -13,7 +13,7 @@ license: MIT
 
 # Japanese company verification / 日本企業の照合
 
-Version 1.0.9 · JPVerify · https://www.jpverify.com
+Version 1.0.10 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -32,11 +32,11 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-company-verify and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-company-verify/1.0.9` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jp-company-verify/1.0.10` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
-1. **Start with the strongest identifier.** A corporate number gives an exact match; a name (and address, if known) is searched. Send names as written in Japanese when you have them (e.g. `トヨタ自動車株式会社`).
+1. **Start with the strongest identifier.** A corporate number gives an exact match; a name is searched in the registered (Japanese) names only, and an address only confirms a match — it cannot find a company on its own. Send names as written in Japanese (e.g. `トヨタ自動車株式会社`).
 2. **Only an English name, or need English output?** Call `POST /v1/jp/entities/resolve` (MCP `jp_entity_resolve`, $0.25) with what you hold: `name` (legal, English or brand name such as "Uniqlo") plus `address` (English or Japanese), `postal_code` or `prefecture`; a `website` or company `email` (only the domain is used); or `t_number`, `corporate_number`, `lei`, `securities_code`. Identifiers return `matched`; a name alone returns `candidates` (show them to the user). `likely_match` needs a strong name match corroborated by the postal code, municipality, website domain or prefecture; it is still not an identifier match. Then use `corporate_number` for the other calls below.
 3. **Choose the call.**
    - Identity and status → `POST /jp-company/verify` (MCP `jp_company_verify`).
@@ -75,10 +75,10 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 ## Reading results / 結果の読み方
 
 - `/v1/jp/entities/resolve`: `decision` is `matched` (identifier), `likely_match`, `candidates`, `identifier_conflict`, `not_found` or `source_unavailable`. `legal_name_ja` is the legally binding name — use it (or `contract_party_name`) in contracts; `name_en.source` says whether the English name is official (`nta_official_en`, `edinet_en`) or a transliteration. A T-number of an individual returns only its registration status.
-- `/jp-company/verify` and `/jp-company/report`: `status` is `active`, `closed`, `not_found` or `multiple_matches`; `verified` is true only for a single confident match. `match_type`, `match_score` and `address_match` show how the match was made. `risk_flags` (report) lists items to confirm. The report also returns `profile` (capital, employees, founding date, website, business summary and representative in Japanese — from gBizINFO; the website may come from Wikidata), `listing` (securities and EDINET codes, latest filing), `regulated` (FSA licences found by corporate number) and `former_names` (from the NTA change log since `coverage_since`). Each section names its source; empty or `source_unavailable` means no data, not a negative finding.
+- `/jp-company/verify` and `/jp-company/report`: an English or romanized name that is not found returns `not_found` with risk flag `english_name_not_in_registry_index` and a `next_step` — the company may still exist; resolve the name with `/v1/jp/entities/resolve` instead (the miss is billed, so start there when you only have an English name). `status` is `active`, `closed`, `not_found` or `multiple_matches`; `verified` is true only for a single confident match. `match_type`, `match_score` and `address_match` show how the match was made. `risk_flags` (report) lists items to confirm. The report also returns `profile` (capital, employees, founding date, website, business summary and representative in Japanese — from gBizINFO; the website may come from Wikidata), `listing` (securities and EDINET codes, latest filing), `regulated` (FSA licences found by corporate number) and `former_names` (from the NTA change log since `coverage_since`). Each section names its source; empty or `source_unavailable` means no data, not a negative finding.
 - `/jp-regulated-entity/verify`: `decision` is `verified`, `no_record_within_coverage`, `manual_review`, `out_of_scope` or `stale_source`; `coverage_status` tells whether the requested licence category is covered. "No record within coverage" is not proof that a licence is required or missing.
 - `/jp-company/filings`: an empty list means no EDINET filings matched the identifier — many private companies file nothing there.
-- English names come in this order: NTA official English name, the company's EDINET English name, its GLEIF (LEI) English legal name, the Wikidata English name, then a romanization of the registered reading (`name_en_source`: `official`, `edinet`, `gleif`, `wikidata`, `furigana_transliteration`). English addresses are official or Japan Post's romanization (`address_en_source`: `official`, `japan_post_romaji`). Nothing is machine-translated. For contracts and legal documents use `legal_name_ja`, the Japanese registered name, which is returned in every `response_language`.
+- English names come in this order: NTA official English name, the company's EDINET English name, its GLEIF (LEI) English legal name, the Wikidata English name, then a romanization of the registered reading (`name_en_source`: `official`, `edinet`, `gleif`, `wikidata`, `furigana_transliteration`). English addresses are official or Japan Post's romanization (`address_en_source`: `official`, `japan_post_romaji`); `localized.address.completeness` is `complete`, `partial` (a building name, unparsed part or town could not be romanized) or `unavailable`. With `response_language=en` a partial English address does not replace `address`, which keeps the full Japanese original — use that for mail or records. The entity lookup reports the same as `address.en_completeness`. Nothing is machine-translated. For contracts and legal documents use `legal_name_ja`, the Japanese registered name, which is returned in every `response_language`.
 
 ## Errors and spending / エラーと費用
 
@@ -103,7 +103,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.9" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -114,7 +114,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-company-verify/1.0.9"},
+             "X-JPVerify-Client": "jp-company-verify/1.0.10"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -126,7 +126,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
-  -H "X-JPVerify-Client: jp-company-verify/1.0.9" \
+  -H "X-JPVerify-Client: jp-company-verify/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```

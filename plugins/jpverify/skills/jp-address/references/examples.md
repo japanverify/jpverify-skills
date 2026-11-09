@@ -7,7 +7,7 @@ Replace `<YOUR_JPVERIFY_API_KEY>` with your key (create one at https://www.jpver
 ```bash
 curl -X POST https://api.jpverify.com/jp-address/normalize \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-address/1.0.9" \
+  -H "X-JPVerify-Client: jp-address/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"}'
 ```
@@ -18,7 +18,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-address/normalize",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-address/1.0.9"},
+             "X-JPVerify-Client": "jp-address/1.0.10"},
     json={"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"},
     timeout=60,
 )
@@ -30,7 +30,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-address/validate \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-address/1.0.9" \
+  -H "X-JPVerify-Client: jp-address/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都千代田区千代田1丁目1番1号", "required_level": 8, "strict": false}'
 ```
@@ -41,7 +41,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-address/validate",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-address/1.0.9"},
+             "X-JPVerify-Client": "jp-address/1.0.10"},
     json={"address": "東京都千代田区千代田1丁目1番1号", "required_level": 8, "strict": False},
     timeout=60,
 )
@@ -53,7 +53,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-address/parse \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-address/1.0.9" \
+  -H "X-JPVerify-Client: jp-address/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都千代田区千代田1丁目1番1号", "response_language": "ja"}'
 ```
@@ -64,7 +64,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-address/parse",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-address/1.0.9"},
+             "X-JPVerify-Client": "jp-address/1.0.10"},
     json={"address": "東京都千代田区千代田1丁目1番1号", "response_language": "ja"},
     timeout=60,
 )
@@ -76,7 +76,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-address/geocode \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-address/1.0.9" \
+  -H "X-JPVerify-Client: jp-address/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都千代田区千代田1丁目1番1号", "max_candidates": 3}'
 ```
@@ -87,7 +87,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-address/geocode",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-address/1.0.9"},
+             "X-JPVerify-Client": "jp-address/1.0.10"},
     json={"address": "東京都千代田区千代田1丁目1番1号", "max_candidates": 3},
     timeout=60,
 )
@@ -99,7 +99,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-address/postal-lookup \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-address/1.0.9" \
+  -H "X-JPVerify-Client: jp-address/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"postal_code": "100-0001", "max_results": 10}'
 ```
@@ -110,7 +110,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-address/postal-lookup",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-address/1.0.9"},
+             "X-JPVerify-Client": "jp-address/1.0.10"},
     json={"postal_code": "100-0001", "max_results": 10},
     timeout=60,
 )

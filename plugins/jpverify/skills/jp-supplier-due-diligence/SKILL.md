@@ -11,7 +11,7 @@ license: MIT
 
 # Supplier and counterparty pre-check / 取引先の事前確認
 
-Version 1.0.9 · JPVerify · https://www.jpverify.com
+Version 1.0.10 · JPVerify · https://www.jpverify.com
 
 A workflow skill: it chains several JPVerify checks into one evidence summary for a human decision. It does **not** approve payments or vendors by itself.
 
@@ -28,7 +28,7 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-supplier-due-diligence and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.9` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jp-supplier-due-diligence/1.0.10` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
@@ -36,7 +36,7 @@ Collect what you know first: legal name, address, corporate number (法人番号
 
 **Japanese supplier** (typical cost $0.10–$0.20; $0.25 more if you start from an English name):
 0. Only an English or romanized name? `POST /v1/jp/entities/resolve` (MCP `jp_entity_resolve`) with the name and the postal code or prefecture first, confirm the candidate with the user, then continue with its `corporate_number`.
-1. `POST /v1/suppliers/resolve` (MCP `jp_supplier_resolve`) with every identifier you have — one call combines corporate-number, T-number and address evidence. Stop here if `decision` is `verified` and the user only needs identity.
+1. `POST /v1/suppliers/resolve` (MCP `jp_supplier_resolve`) with every identifier you have — one call combines corporate-number, T-number and address evidence. Its `name` is matched against registered Japanese names only; an English name that misses returns reason `english_name_not_in_registry_index` (step 0 first). Each matched check gives `address_en_completeness`; treat `partial` English as display only and keep the Japanese `address`. Stop here if `decision` is `verified` and the user only needs identity.
 2. If an invoice is involved and its issuer details differ from the supplier record: `POST /jp-invoice/check`.
 3. Only when relevant to the business: `POST /jp-regulated-entity/verify` (licensed financial businesses) and `GET /jp-company/filings` (listed companies).
 
@@ -98,7 +98,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.9" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -109,7 +109,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.9"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.0.10"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -121,7 +121,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.9" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```

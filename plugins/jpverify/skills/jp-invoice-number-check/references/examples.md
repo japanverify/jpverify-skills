@@ -7,7 +7,7 @@ Replace `<YOUR_JPVERIFY_API_KEY>` with your key (create one at https://www.jpver
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/verify \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.9" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```
@@ -18,7 +18,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/verify",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.0.9"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.0.10"},
     json={"registration_number": "T1013301046627", "response_language": "both"},
     timeout=60,
 )
@@ -30,7 +30,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/check \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.9" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "supplier_name": "株式会社ABC", "response_language": "both"}'
 ```
@@ -41,7 +41,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/check",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.0.9"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.0.10"},
     json={"registration_number": "T1013301046627", "supplier_name": "株式会社ABC", "response_language": "both"},
     timeout=60,
 )
@@ -53,7 +53,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/verify-batch \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.9" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"registration_numbers": ["T1013301046627"], "response_language": "both"}'
 ```
@@ -64,7 +64,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/verify-batch",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.0.9"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.0.10"},
     json={"registration_numbers": ["T1013301046627"], "response_language": "both"},
     timeout=60,
 )
@@ -76,7 +76,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/invoices/issuer-match \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.9" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"document": {"registration_number": "T1013301046627", "issuer_name": "宏達株式会社"}, "expected": {"registration_number": "T1013301046627"}}'
 ```
@@ -87,7 +87,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/invoices/issuer-match",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.0.9"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.0.10"},
     json={"document": {"registration_number": "T1013301046627", "issuer_name": "宏達株式会社"}, "expected": {"registration_number": "T1013301046627"}},
     timeout=60,
 )
@@ -99,7 +99,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/invoices/issuer-match/extract \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.9" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"text": "請求書 宏達株式会社 登録番号 T1013301046627 請求日 2026年10月31日 合計110,000円", "expected": {"registration_number": "T1013301046627"}}'
 ```
@@ -110,7 +110,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/invoices/issuer-match/extract",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.0.9"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.0.10"},
     json={"text": "請求書 宏達株式会社 登録番号 T1013301046627 請求日 2026年10月31日 合計110,000円", "expected": {"registration_number": "T1013301046627"}},
     timeout=60,
 )

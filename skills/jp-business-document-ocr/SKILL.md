@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese invoice, receipt and business-card OCR / 請求書・領収書・名刺のOCR
 
-Version 1.0.9 · JPVerify · https://www.jpverify.com
+Version 1.0.10 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -26,12 +26,12 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-business-document-ocr/1.0.9"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-business-document-ocr/1.0.10"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-business-document-ocr and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-business-document-ocr/1.0.9` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-business-document-ocr/1.0.10` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
@@ -72,6 +72,7 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 - `validation.status` is the overall result (`passed`, or a status needing attention); `validation.checks` lists each check (required fields, T-number format, date, arithmetic, tax).
 - `field_status` says how each field is supported: `ocr_only` (read but not cross-checked), `format_valid`, `corroborated` (consistent with other fields), etc. Treat `ocr_only` values as unconfirmed.
 - If `manual_review_required` is true, show the fields and the failing checks to the user; do not "fix" amounts or numbers yourself.
+- `supplier_name` is the issuer name without its printed label (`発行者:`, `会社名：`, `Issuer:` are removed); lines carrying a date are never returned as line items.
 - `invoice_eligibility` (extract-and-verify) answers input-tax-credit eligibility: `eligible`, `not_eligible` (the issuer was not registered on the transaction date, or the T-number is invalid) or `needs_review` (an item was not read). `requirements` lists the seven qualified-invoice items; `summary_en` is a one-line conclusion for the user. It is an evidence check, not tax advice — a missing item may be printed but unread, and transitional deductions for non-registered suppliers are not evaluated.
 - With business cards, printed values (`card`) and registry values (enrichment) are kept separate; do not merge them silently.
 
@@ -98,7 +99,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/jp-invoice/extract \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.9" \
+  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"}'
 ```
@@ -109,7 +110,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-invoice/extract",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-business-document-ocr/1.0.9"},
+             "X-JPVerify-Client": "jp-business-document-ocr/1.0.10"},
     json={"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"},
     timeout=60,
 )
@@ -121,7 +122,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-invoice/extract \
-  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.9" \
+  -H "X-JPVerify-Client: jp-business-document-ocr/1.0.10" \
   -H "Content-Type: application/json" \
   -d '{"text": "請求書 株式会社ABC 登録番号 T1013301046627 請求日 2026年8月15日 支払期日 2026年9月30日 合計110000円 消費税10000円", "fields": ["supplier_name", "registration_number", "invoice_date", "due_date", "total", "tax_amount", "payment_terms"], "response_language": "both"}'
 ```
