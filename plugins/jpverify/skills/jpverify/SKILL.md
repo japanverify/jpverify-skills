@@ -2,7 +2,7 @@
 name: jpverify
 description: >-
   JPVerify: Japan business data for AI agents — verify Japanese companies (法人番号), qualified-invoice
-  T-numbers (インボイス), invoice issuers and suppliers; OCR Japanese invoices, receipts and business cards;
+  T-numbers (インボイス), invoice issuers (including registration on the invoice date) and suppliers;
   normalize and validate Japanese addresses; find a Japanese company from its English name; plus JP PINT
   e-invoice validation. Use when a task involves Japanese business documents or data and you need to
   pick the right check. Paid per call (API key credits or x402); a free guide tool is available.
@@ -11,15 +11,14 @@ license: MIT
 
 # JPVerify — pick the right Japan business check
 
-Version 1.0.10 · JPVerify · https://www.jpverify.com
+Version 1.1.0 · JPVerify · https://www.jpverify.com
 
 Use this skill to route a task to the right JPVerify endpoint. For the common tasks, the focused skills have detailed workflows:
 
 | Task | Skill |
 |---|---|
-| T-number / qualified-invoice issuer checks | `jp-invoice-number-check` |
+| T-number and invoice issuer checks (name, address, registration on the invoice date), issuer vs supplier master | `jp-invoice-number-check` |
 | Japanese company from an English name or identifier, corporate number, filings, FSA licences | `jp-company-verify` |
-| Invoice / receipt / business-card OCR | `jp-business-document-ocr` |
 | Japanese address normalization, validation, geocoding, postal codes | `jp-address` |
 | Japanese supplier / counterparty pre-check before onboarding or payment | `jp-supplier-due-diligence` |
 | JP PINT (Peppol) e-invoice XML validation | `jp-pint-invoice-validation` |
@@ -34,13 +33,13 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jpverify and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jpverify/1.0.10` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jpverify/1.1.0` on HTTP calls. Never print, log or share an API key.
 
 ## Routing / 使い分け
 
 1. **English company name or an identifier, need the Japanese legal entity in English?** `POST /v1/jp/entities/resolve` (MCP `jp_entity_resolve`).
 2. **Unsure which call fits?** Ask the free MCP tool `jpverify_guide` with the task in plain words, or use the table below.
-3. **Prefer one composite call over several small ones** when it answers the question (e.g. `/jp-invoice/extract-and-verify` instead of OCR + check; `/v1/suppliers/resolve` for a supplier with several identifiers).
+3. **JPVerify does not read files.** Read invoices, receipts and business cards yourself, then send the fields. Prefer one call that answers the question (e.g. `/jp-invoice/check` with the issuer name and invoice date instead of separate lookups; `/v1/suppliers/resolve` for a supplier with several identifiers).
 4. **Batches:** up to 10 items use the `*-batch` endpoints; larger jobs (up to 1,000) use `/v1/batch-jobs`, which is x402-only and needs a caller-chosen capability token and an `Idempotency-Key` header. Always confirm the total cost with the user first.
 
 ## Endpoints and prices / エンドポイントと料金
@@ -51,26 +50,14 @@ Always send `X-JPVerify-Client: jpverify/1.0.10` on HTTP calls. Never print, log
 |---|---|---|---|---|
 | `POST /v1/jp/entities/resolve` | `jp_entity_resolve` | $0.25 | You hold an English, brand or romanized Japanese company name, an English address or postal code, a website or e-mail domain, a T-number, corporate number, LEI or securities code and need the Japanese legal entity, in English. | Decision (matched / likely_match / candidates), legally binding Japanese name, kana, English name with source, contract party name, status and qualified-invoice registration. |
 | `POST /jp-invoice/verify` | `jp_invoice_registration_verify` | $0.01 | You already have a Japanese T+13-digit qualified-invoice registration number. | NTA registration status, corporate number, registered name, and relevant dates. |
-| `POST /jp-invoice/check` | `jp_invoice_issuer_check` | $0.03 | You have extracted issuer fields and need T-number, company-name, and address comparison. | OCR issuer fields, NTA registry fields, comparison results, and resolved values; phone is not registry-compared. |
+| `POST /jp-invoice/check` | `jp_invoice_issuer_check` | $0.05 | You have a T-number and the issuer name from an invoice (address and invoice date optional) and need to know whether they belong together and the issuer was registered on the invoice date. | Registry fields, issuer name and address comparison, registration on the invoice date, supplier master comparison, and one status per check in check_results. |
 | `POST /jp-invoice/verify-batch` | — | $0.08 | You need up to 10 Japanese T-number checks in one request. | One NTA registration result per T-number. |
-| `POST /v1/invoices/issuer-match` | `jp_invoice_issuer_match` | $0.05 | Match structured invoice fields against supplier master data. | Issuer decision and separate document, expected and registry evidence. |
-| `POST /v1/invoices/issuer-match/extract` | `jp_invoice_issuer_match_extract` | $0.10 | Read an invoice document before matching it against supplier master data. | Issuer decision and separate document, expected and registry evidence. |
 | `POST /jp-company/verify` | `jp_company_verify` | $0.01 | You need a Japanese company or corporate-number lookup. | Corporate number, registered Japanese legal name (legal_name_ja) and address, English name (NTA official, EDINET, or romanized reading) and English address (official or Japan Post romanization) with their sources, active or closed status, and match evidence. |
 | `POST /jp-company/report` | — | $0.10 | You need a Japan company registry pre-check with risk flags. | Registry identity, status, evidence and risk flags, plus a profile (capital, employees, founding date, website, representative), listing and latest EDINET filing, FSA licences and former names, each with its source; not full KYC/KYB. |
 | `POST /jp-company/verify-batch` | — | $0.08 | You need up to 10 Japanese company or corporate-number lookups in one request. | One result per input with match status and registry evidence. |
 | `POST /v1/suppliers/resolve` | `jp_supplier_resolve` | $0.10 | You need one coverage-aware supplier check combining company, qualified-invoice, and address evidence; optionally includes projected gBizINFO activity evidence when the internal feature flag is enabled. | Independent evidence checks, source versions, and a resolved/ambiguous/not-found/insufficient-coverage status; optional gBizINFO is projected enrichment inside this response, not a standalone source or raw-response resale. Not a legal or KYB determination. |
 | `POST /jp-regulated-entity/verify` | — | $0.03 | You need to verify an entity against the covered Japanese FSA financial instruments, funds transfer, or crypto-asset exchange datasets. | Coverage-aware licensing decision, freshness, identity match, license evidence, and review warnings; not a legal unlicensed determination. |
 | `GET /jp-company/filings` | — | $0.01 | You need EDINET filing metadata for a Japanese company by corporate number, EDINET code, or security code. | Filing metadata, correction/withdrawal relationships, freshness, and official evidence references; raw files remain internal. |
-
-### Document OCR / 書類OCR
-
-| Endpoint | MCP tool | Price (USD) | Use when | Returns |
-|---|---|---|---|---|
-| `POST /jp-invoice/extract` | `jp_invoice_extract` | $0.03 | You need Japanese billing-invoice OCR and deterministic quality checks without registry lookup. | OCR-derived invoice fields plus format, arithmetic, tax, completeness, and review status. |
-| `POST /jp-invoice/extract-and-verify` | `jp_invoice_extract_and_verify` | $0.10 | You need invoice OCR and issuer name/address comparison or completion using NTA public data. | OCR values, registry values, resolved issuer values, validation, an explicit review signal, and invoice_eligibility (eligible / not_eligible / needs_review for input tax credit, with the seven qualified-invoice items and registration on the transaction date). |
-| `POST /jp-receipt/extract` | `jp_receipt_extract` | $0.03 | You need Japanese receipt or 領収書 OCR with local tax, amount, T-number, and format checks. | Structured receipt fields, deterministic validation, field status, and review signals. |
-| `POST /jp-business-card/extract` | `jp_business_card_extract` (enrich=false) | $0.03 | You need only the person, role, department, company, phone, email, or address printed on a Japanese business card. | Card-printed contact fields only; no corporate-number or NTA issuer verification. |
-| `POST /jp-business-card/extract-and-enrich` | `jp_business_card_extract` (enrich=true) | $0.10 | You need business-card OCR plus Japanese corporate-number and qualified-invoice enrichment. | Separate card OCR values and registry-resolved company values; registry pre-check, not full KYB. |
 
 ### Japanese addresses / 住所
 
@@ -100,21 +87,14 @@ Always send `X-JPVerify-Client: jpverify/1.0.10` on HTTP calls. Never print, log
 |---|---|---|
 | `POST /v1/jp/entities/resolve` | — | `name`, `address`, `postal_code`, `prefecture`, `corporate_number`, `t_number`, `lei`, `securities_code`, `duns`, `max_candidates`, `website`, `email` |
 | `POST /jp-invoice/verify` | `registration_number` | `response_language` |
-| `POST /jp-invoice/check` | `registration_number` | `supplier_name`, `address`, `response_language` |
+| `POST /jp-invoice/check` | `registration_number` | `supplier_name`, `address`, `invoice_date`, `expected_registration_number`, `expected_corporate_number`, `response_language` |
 | `POST /jp-invoice/verify-batch` | `registration_numbers` | `response_language` |
-| `POST /v1/invoices/issuer-match` | `document` | `supplier_id`, `client_reference`, `expected`, `response_language` |
-| `POST /v1/invoices/issuer-match/extract` | — | `supplier_id`, `client_reference`, `expected`, `text`, `image_base64`, `file_url`, `mime_type`, `max_pages`, `response_language`, `fields` |
 | `POST /jp-company/verify` | — | `name`, `corporate_number`, `address`, `response_language` |
 | `POST /jp-company/report` | — | `name`, `corporate_number`, `address`, `response_language` |
 | `POST /jp-company/verify-batch` | `items` | `response_language` |
 | `POST /v1/suppliers/resolve` | — | `name`, `corporate_number`, `address`, `registration_number`, `t_number`, `country_code`, `identifiers`, `response_language` |
 | `POST /jp-regulated-entity/verify` | — | `corporate_number`, `name`, `address`, `phone`, `categories`, `response_language` |
 | `GET /jp-company/filings` | — | `corporate_number`, `edinet_code`, `security_code`, `date_from`, `date_to`, `doc_type_code`, `form_code`, `include_withdrawn`, `limit`, `cursor`, `response_language` |
-| `POST /jp-invoice/extract` | — | `text`, `image_base64`, `file_url`, `mime_type`, `max_pages`, `response_language`, `fields` |
-| `POST /jp-invoice/extract-and-verify` | — | `text`, `image_base64`, `file_url`, `mime_type`, `max_pages`, `response_language`, `fields`, `supplier_name`, `address` |
-| `POST /jp-receipt/extract` | — | `text`, `image_base64`, `file_url`, `mime_type`, `max_pages`, `response_language`, `fields` |
-| `POST /jp-business-card/extract` | — | `front_image_base64`, `back_image_base64`, `front_image_url`, `back_image_url`, `mime_type`, `max_pages`, `output_format`, `include_raw_text`, `response_language` |
-| `POST /jp-business-card/extract-and-enrich` | — | `front_image_base64`, `back_image_base64`, `front_image_url`, `back_image_url`, `mime_type`, `max_pages`, `output_format`, `include_raw_text`, `response_language` |
 | `POST /jp-address/normalize` | `address` | `response_language` |
 | `POST /jp-address/parse` | `address` | `postal_code`, `response_language`, `parser_profile` |
 | `POST /jp-address/postal-lookup` | — | `postal_code`, `prefecture`, `county`, `city`, `ward`, `town`, `max_results` |
@@ -123,7 +103,7 @@ Always send `X-JPVerify-Client: jpverify/1.0.10` on HTTP calls. Never print, log
 | `POST /v1/invoices/validate-jp-pint` | `xml` | `registry_enhance` |
 | `POST /v1/batch-jobs` | `operation` | `items`, `csv_data`, `response_language` |
 
-Where no field is required, send at least one identifier or input (for OCR: `text`, `file_url` or `image_base64`; for business cards: `front_image_url` or `front_image_base64`). `response_language` is `ja`, `en` or `both` (default `both`).
+Where no field is required, send at least one identifier. JPVerify does not read files: send the fields you read. `response_language` is `ja`, `en` or `both` (default `both`).
 
 Japanese descriptions and request examples for every endpoint: [references/endpoints.md](references/endpoints.md), [references/examples.md](references/examples.md).
 
@@ -157,7 +137,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/entities/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jpverify/1.0.10" \
+  -H "X-JPVerify-Client: jpverify/1.1.0" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -168,7 +148,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/entities/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jpverify/1.0.10"},
+             "X-JPVerify-Client": "jpverify/1.1.0"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -180,7 +160,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/entities/resolve \
-  -H "X-JPVerify-Client: jpverify/1.0.10" \
+  -H "X-JPVerify-Client: jpverify/1.1.0" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -191,5 +171,5 @@ Full SDK examples (Python `x402`, JavaScript `@x402/fetch`): https://api.jpverif
 
 - Results are a **public-registry pre-check** with the source and as-of date of the data. They are not KYB, AML or sanctions screening, and not legal, tax or accounting advice. A "not found" does not mean the entity does not exist or is risky.
 - If `manual_review_required` is true or a status is ambiguous, show the evidence to the user and let them decide; do not decide on their behalf.
-- Only send documents, images and personal data the user is entitled to process. Do not repeat full personal details (names, phone numbers, e-mail addresses on business cards) back unless the user asked for them.
+- Only send data the user is entitled to process. JPVerify takes fields, not files; do not send personal details (names, phone numbers, e-mail addresses) that a check does not need.
 - Docs: API key https://api.jpverify.com/docs/api-key · x402 https://api.jpverify.com/docs/x402 · terms https://api.jpverify.com/en/terms · privacy https://api.jpverify.com/en/privacy

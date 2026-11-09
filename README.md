@@ -1,8 +1,8 @@
 # JPVerify skills — Japan business data for AI agents
 
 Agent skills and a Claude Code plugin for [JPVerify](https://www.jpverify.com/?ref=github): verify Japanese companies
-(法人番号) and qualified-invoice T-numbers (インボイス), OCR Japanese invoices, receipts and business cards,
-and more — with your agent choosing the right call and keeping costs in check.
+(法人番号) and qualified-invoice T-numbers (インボイス), check invoice issuers (including registration on the
+invoice date and your supplier master data), and more — with your agent choosing the right call and keeping costs in check.
 
 ```bash
 npx skills add japanverify/jpverify-skills
@@ -12,10 +12,9 @@ npx skills add japanverify/jpverify-skills
 
 | Skill | What it does |
 |---|---|
-| [`jpverify`](skills/jpverify/SKILL.md) | JPVerify: Japan business data for AI agents — verify Japanese companies (法人番号), qualified-invoice T-numbers (インボイス), invoice issuers and suppliers; OCR Japanese invoices, receipts and business cards; normalize and validate Japanese addresses; find a Japanese company from its English name; plus JP PINT e-invoice validation. |
-| [`jp-invoice-number-check`](skills/jp-invoice-number-check/SKILL.md) | Check Japanese qualified-invoice registration numbers (T-numbers, 適格請求書発行事業者登録番号, インボイス登録番号) against the National Tax Agency registry with JPVerify, and compare an invoice issuer's name and address with the registered record. |
+| [`jpverify`](skills/jpverify/SKILL.md) | JPVerify: Japan business data for AI agents — verify Japanese companies (法人番号), qualified-invoice T-numbers (インボイス), invoice issuers (including registration on the invoice date) and suppliers; normalize and validate Japanese addresses; find a Japanese company from its English name; plus JP PINT e-invoice validation. |
+| [`jp-invoice-number-check`](skills/jp-invoice-number-check/SKILL.md) | Check Japanese qualified-invoice registration numbers (T-numbers, 適格請求書発行事業者登録番号, インボイス登録番号) against the National Tax Agency registry with JPVerify, check that a T-number belongs to the issuer name (and address) on an invoice and that the issuer was registered — not cancelled or expired — on the invoice date, and match an invoice to a supplier's expected T-number or corporate number from master data (AP / vendor checks). |
 | [`jp-company-verify`](skills/jp-company-verify/SKILL.md) | Verify Japanese companies against official registries with JPVerify: identify a Japanese company from an English or romanized name, postal code, T-number, LEI or securities code with English output; corporate number (法人番号) lookup by number or company name, active/closed status, registered address, a company pre-check report with risk flags, company profile (capital, employees, website), listing, EDINET filings, Financial Services Agency licences and former names. |
-| [`jp-business-document-ocr`](skills/jp-business-document-ocr/SKILL.md) | Read Japanese business documents with JPVerify: billing invoice (請求書) OCR, receipt (領収書・レシート) OCR and business card (名刺) OCR into structured JSON, with local checks of dates, tax, totals and T-numbers, and optional verification of the issuer against National Tax Agency registries. |
 | [`jp-address`](skills/jp-address/SKILL.md) | Normalize, parse, validate and geocode Japanese addresses (住所の正規化・解析・検証) with JPVerify, and look up Japanese postal codes (郵便番号) — down to 丁目, block and building level, with the evidence behind each match. |
 | [`jp-supplier-due-diligence`](skills/jp-supplier-due-diligence/SKILL.md) | Run a pre-payment supplier and counterparty check with JPVerify: combine Japanese corporate-number, qualified-invoice (T-number) and address evidence for a supplier, add FSA licence and EDINET checks when relevant. Covers Japanese suppliers only. |
 | [`jp-pint-invoice-validation`](skills/jp-pint-invoice-validation/SKILL.md) | Validate Japanese Peppol e-invoices (JP PINT 1.1.3 UBL Invoice XML) with JPVerify against the official OASIS UBL 2.1 XSD and OpenPeppol JP PINT Schematron, optionally checking the seller's qualified-invoice T-number in the National Tax Agency registry. |
@@ -58,5 +57,5 @@ and is documented with its price. Results are public-registry pre-checks, not KY
 
 ## License
 
-MIT. Generated from the JPVerify API catalog (version 1.0.10); report issues at https://github.com/japanverify/jpverify-skills/issues
+MIT. Generated from the JPVerify API catalog (version 1.1.0); report issues at https://github.com/japanverify/jpverify-skills/issues
 or service@jpverify.com. Privacy policy: https://api.jpverify.com/en/privacy · Terms: https://api.jpverify.com/en/terms

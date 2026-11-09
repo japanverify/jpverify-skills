@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0 — 2026-11
+
+- **Breaking: document OCR is retired.** JPVerify no longer reads files. `/jp-invoice/extract`, `/jp-receipt/extract`,
+  `/jp-business-card/extract`, `/jp-business-card/extract-and-enrich`, `/jp-invoice/extract-and-verify` and
+  `/v1/invoices/issuer-match/extract` (and their MCP tools) answer HTTP 410 with the replacement, free of charge.
+  The `jp-business-document-ocr` skill is removed.
+- `/jp-invoice/check` adds an optional `invoice_date`: it checks that the issuer was registered, and not cancelled or
+  expired, on that date (`invoice_date_outside_registration_period` otherwise). `check_results` gives one status per
+  check: T-number, issuer name, address, registration on the invoice date. Price $0.05 (was $0.03).
+- `/jp-invoice/check` adds optional `expected_registration_number` / `expected_corporate_number` from your supplier
+  master data. `/v1/invoices/issuer-match` (MCP `jp_invoice_issuer_match`) is merged into it and answers HTTP 410.
+- From a business card, use the English company lookup (name, address, website, e-mail) or `/jp-company/verify`.
+
 ## 1.0.10 — 2026-11
 
 - English addresses report `completeness` (`complete` / `partial` / `unavailable`) separately from confidence. With

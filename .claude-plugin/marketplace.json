@@ -10,7 +10,7 @@
     {
       "name": "jpverify",
       "source": "./plugins/jpverify",
-      "description": "Japan business data for AI agents: company (法人番号) and T-number (インボイス) verification, invoice/receipt/business-card OCR, English company lookup and address checks via the JPVerify MCP server.",
+      "description": "Japan business data for AI agents: company (法人番号) and T-number (インボイス) verification, invoice issuer checks, English company lookup and address checks via the JPVerify MCP server.",
       "category": "data",
       "homepage": "https://www.jpverify.com"
     }

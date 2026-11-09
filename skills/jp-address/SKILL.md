@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese addresses / 日本の住所
 
-Version 1.0.10 · JPVerify · https://www.jpverify.com
+Version 1.1.0 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -26,12 +26,12 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-address/1.0.10"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-address/1.1.0"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-address and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-address/1.0.10` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-address/1.1.0` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
@@ -64,7 +64,7 @@ Always send `X-JPVerify-Client: jp-address/1.0.10` on HTTP calls. Never print, l
 | `POST /jp-address/geocode` | — | `address`, `components`, `postal_code`, `max_candidates`, `minimum_acceptable_level`, `provider` |
 | `POST /jp-address/postal-lookup` | — | `postal_code`, `prefecture`, `county`, `city`, `ward`, `town`, `max_results` |
 
-Where no field is required, send at least one identifier or input (for OCR: `text`, `file_url` or `image_base64`; for business cards: `front_image_url` or `front_image_base64`). `response_language` is `ja`, `en` or `both` (default `both`).
+Where no field is required, send at least one identifier. JPVerify does not read files: send the fields you read. `response_language` is `ja`, `en` or `both` (default `both`).
 
 Japanese descriptions and request examples for every endpoint: [references/endpoints.md](references/endpoints.md), [references/examples.md](references/examples.md).
 
@@ -99,7 +99,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/jp-address/normalize \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-address/1.0.10" \
+  -H "X-JPVerify-Client: jp-address/1.1.0" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"}'
 ```
@@ -110,7 +110,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/jp-address/normalize",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-address/1.0.10"},
+             "X-JPVerify-Client": "jp-address/1.1.0"},
     json={"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"},
     timeout=60,
 )
@@ -122,7 +122,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/jp-address/normalize \
-  -H "X-JPVerify-Client: jp-address/1.0.10" \
+  -H "X-JPVerify-Client: jp-address/1.1.0" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"}'
 ```
@@ -133,5 +133,5 @@ Full SDK examples (Python `x402`, JavaScript `@x402/fetch`): https://api.jpverif
 
 - Results are a **public-registry pre-check** with the source and as-of date of the data. They are not KYB, AML or sanctions screening, and not legal, tax or accounting advice. A "not found" does not mean the entity does not exist or is risky.
 - If `manual_review_required` is true or a status is ambiguous, show the evidence to the user and let them decide; do not decide on their behalf.
-- Only send documents, images and personal data the user is entitled to process. Do not repeat full personal details (names, phone numbers, e-mail addresses on business cards) back unless the user asked for them.
+- Only send data the user is entitled to process. JPVerify takes fields, not files; do not send personal details (names, phone numbers, e-mail addresses) that a check does not need.
 - Docs: API key https://api.jpverify.com/docs/api-key · x402 https://api.jpverify.com/docs/x402 · terms https://api.jpverify.com/en/terms · privacy https://api.jpverify.com/en/privacy
