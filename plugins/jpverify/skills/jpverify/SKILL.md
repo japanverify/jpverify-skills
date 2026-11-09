@@ -11,7 +11,7 @@ license: MIT
 
 # JPVerify — pick the right Japan business check
 
-Version 1.2.0 · JPVerify · https://www.jpverify.com
+Version 1.2.1 · JPVerify · https://www.jpverify.com
 
 Use this skill to route a task to the right JPVerify endpoint. For the common tasks, the focused skills have detailed workflows:
 
@@ -33,7 +33,7 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jpverify and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jpverify/1.2.0` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jpverify/1.2.1` on HTTP calls. Never print, log or share an API key.
 
 ## Routing / 使い分け
 
@@ -139,7 +139,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/companies/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jpverify/1.2.0" \
+  -H "X-JPVerify-Client: jpverify/1.2.1" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -150,7 +150,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/companies/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jpverify/1.2.0"},
+             "X-JPVerify-Client": "jpverify/1.2.1"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -162,7 +162,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/companies/resolve \
-  -H "X-JPVerify-Client: jpverify/1.2.0" \
+  -H "X-JPVerify-Client: jpverify/1.2.1" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```

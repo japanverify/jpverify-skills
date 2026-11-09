@@ -7,7 +7,7 @@ Replace `<YOUR_JPVERIFY_API_KEY>` with your key (create one at https://www.jpver
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/companies/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.0" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.1" \
   -H "Content-Type: application/json" \
   -d '{"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"}'
 ```
@@ -18,7 +18,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/companies/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.0"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.1"},
     json={"name": "Murata Manufacturing Co., Ltd.", "prefecture": "Kyoto"},
     timeout=60,
 )
@@ -30,7 +30,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/suppliers/resolve \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.0" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.1" \
   -H "Content-Type: application/json" \
   -d '{"name": "株式会社ABC", "registration_number": "T1013301046627", "response_language": "both"}'
 ```
@@ -41,7 +41,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/suppliers/resolve",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.0"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.1"},
     json={"name": "株式会社ABC", "registration_number": "T1013301046627", "response_language": "both"},
     timeout=60,
 )
@@ -53,7 +53,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/invoices/check-issuer \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.0" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.1" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "supplier_name": "株式会社ABC", "address": "東京都千代田区千代田1-1", "invoice_date": "2026-11-01", "response_language": "both"}'
 ```
@@ -64,7 +64,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/invoices/check-issuer",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.0"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.1"},
     json={"registration_number": "T1013301046627", "supplier_name": "株式会社ABC", "address": "東京都千代田区千代田1-1", "invoice_date": "2026-11-01", "response_language": "both"},
     timeout=60,
 )
@@ -76,7 +76,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/regulated-entities/verify \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.0" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.1" \
   -H "Content-Type: application/json" \
   -d '{"corporate_number": "1234567890123", "categories": ["funds_transfer_business"], "response_language": "en"}'
 ```
@@ -87,7 +87,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/regulated-entities/verify",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.0"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.1"},
     json={"corporate_number": "1234567890123", "categories": ["funds_transfer_business"], "response_language": "en"},
     timeout=60,
 )
@@ -99,7 +99,7 @@ print(response.status_code, response.json())
 ```bash
 curl -G https://api.jpverify.com/v1/jp/filings \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.0" \
+  -H "X-JPVerify-Client: jp-supplier-due-diligence/1.2.1" \
   --data-urlencode 'edinet_code=E00000' \
   --data-urlencode 'limit=20' \
   --data-urlencode 'response_language=en'
@@ -111,7 +111,7 @@ import requests
 response = requests.get(
     "https://api.jpverify.com/v1/jp/filings",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.0"},
+             "X-JPVerify-Client": "jp-supplier-due-diligence/1.2.1"},
     params={"edinet_code": "E00000", "limit": 20, "response_language": "en"},
     timeout=60,
 )

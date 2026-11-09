@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1 — 2026-11
+
+- New free `GET /v1/account/balance` for API-key users: returns `balance_usd`, `free_credit_usd`, `paid_credit_usd` and
+  `top_up_url`; nothing is charged. Over MCP, the free tool `jpverify_balance` returns the same. Check it before a large
+  batch.
+
 ## 1.2.0 — 2026-11
 
 - **New endpoint names** (`/v1/jp/{resource}/{action}`). Same prices, same request and response fields. The old paths
