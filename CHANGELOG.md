@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.3.0 — 2026-11
+
+Better results from the same endpoints; no field was removed or renamed, prices are unchanged.
+
+- **Company lookup (`/v1/jp/companies/resolve`)**: common readings no longer hide the company you mean
+  (`Murata` → 村田製作所, `Sagawa` → 佐川急便); brand names find the owning company as a candidate (`au` → KDDI,
+  `MOS Burger` → モスフードサービス, `Pocari Sweat` → 大塚製薬). Listing, Wikidata prominence and gBizINFO employee
+  counts order candidates (new `signals` `wikidata_sitelinks`, `company_size`); they never confirm a match. A
+  business-specific postal code counts as postal evidence when its office name matches. Website-only lookups also
+  use gBizINFO websites. `sources` lists gBizINFO when it was used.
+- **Postal codes and addresses**: Japan Post business-specific postal codes (事業所個別郵便番号, about 22,000) are
+  supported. `/v1/jp/postal-codes/lookup` matches have `postal_code_type` (`area` / `business_specific`) and, for a
+  business code, `business_name`, `street` and `business_kind`; `normalize` and `validate` accept them. Parcel
+  addresses (地番) now match at level 7 instead of `not_found`; Hokkaido grid towns (宮の森1条 / 宮の森一条) match; one
+  house stored under two spellings is no longer `ambiguous` (warning `duplicate_spelling_candidates_merged`).
+- **Company report**: when the live gBizINFO source is unavailable, `profile` comes from a dated gBizINFO snapshot
+  (`retrieval: bulk_snapshot`, no representative name).
+
 ## 1.2.1 — 2026-11
 
 - New free `GET /v1/account/balance` for API-key users: returns `balance_usd`, `free_credit_usd`, `paid_credit_usd` and

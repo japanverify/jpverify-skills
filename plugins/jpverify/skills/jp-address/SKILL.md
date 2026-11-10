@@ -11,7 +11,7 @@ license: MIT
 
 # Japanese addresses / 日本の住所
 
-Version 1.2.1 · JPVerify · https://www.jpverify.com
+Version 1.3.0 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -28,12 +28,12 @@ JPVerify is a paid, per-call API. In this plugin the `jpverify` MCP server is al
 2. **Endpoints without an MCP tool.** The plugin's saved key is not available to shell commands. Either show the user the request below with `<YOUR_JPVERIFY_API_KEY>` so they run it themselves, or use an x402 client with USDC on Base (`eip155:8453`) within a budget the user approved: call without a key, read the HTTP 402 price, sign and retry with `PAYMENT-SIGNATURE`. Do not ask the user to paste a key into the chat.
 3. **No key saved.** The MCP server still works for the free tool `jpverify_guide`; use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-address and save the key in the plugin's settings.
 
-Always send `X-JPVerify-Client: jp-address/1.2.1` on HTTP calls. Never print, log or share an API key.
+Always send `X-JPVerify-Client: jp-address/1.3.0` on HTTP calls. Never print, log or share an API key.
 
 ## Workflow / 手順
 
 1. **Pick the cheapest call that answers the question.**
-   - Postal code → areas: `POST /v1/jp/postal-codes/lookup` (cheapest).
+   - Postal code → areas: `POST /v1/jp/postal-codes/lookup` (cheapest). Business-specific codes of large offices (事業所個別郵便番号, e.g. 100-8310) are found too.
    - Standardized address + evidence in one call: `POST /v1/jp/addresses/normalize` (MCP `jp_address_normalize`). This is the default.
    - Components only, no geocoding: `POST /v1/jp/addresses/parse`.
    - Coordinates / candidates: `POST /v1/jp/addresses/geocode`.
@@ -48,8 +48,8 @@ Always send `X-JPVerify-Client: jp-address/1.2.1` on HTTP calls. Never print, lo
 | `POST /v1/jp/addresses/normalize` | `jp_address_normalize` | $0.005 | You need Japanese address normalization or standardization, whether or not the input contains a postal code. | Normalized prefecture/city/town/chome/block/lot/house components, an English address from Japan Post romanization, parser confidence, match hierarchy, geocoder evidence, and postal-code evidence when a postal code is supplied. It does not infer a missing postal code. |
 | `POST /v1/jp/addresses/validate` | `jp_address_validate` | $0.005 | You need one evidence-based Japanese address quality decision combining parsed address, postal evidence, and geocoder evidence. | Exact, partial, ambiguous, conflict, or unverified status with accepted hierarchy, confidence signals, validation scope, and reasons. |
 | `POST /v1/jp/addresses/parse` | — | $0.005 | You need Japanese address components such as prefecture, city, town, chome, block, lot, or house without postal lookup or geocoding. | Parser-only components, normalized value, chome/block/lot/house fields, English address and components from Japan Post romanization, normalization changes, unparsed fragments, parser status, and parser confidence. Postal and geocoder evidence are not returned. |
-| `POST /v1/jp/addresses/geocode` | — | $0.005 | You need Japanese forward-geocoding candidates, coordinates, address IDs, or hierarchy levels. The required hierarchy is inferred from the input. | Provider-neutral Jageocoder candidates with normalized address, coordinates, address ID, match level, granularity, confidence, reasons, unmatched tails, and dictionary status. Level 5/6 is oaza/aza, 7 is block, and 8 is building or house node when covered. City-level or town-prefix candidates remain partial; town-level results are not door-number or coordinate accuracy claims. |
-| `POST /v1/jp/postal-codes/lookup` | — | $0.001 | You need a Japan Post postal-code lookup or reverse lookup from a postal code or administrative address. | Japan Post local-snapshot matches with postal code, prefecture, city, town, kana, Japan Post romanized prefecture/city/town, confidence, source, data version, and candidate count. |
+| `POST /v1/jp/addresses/geocode` | — | $0.005 | You need Japanese forward-geocoding candidates, coordinates, address IDs, or hierarchy levels. The required hierarchy is inferred from the input. | Provider-neutral Jageocoder candidates with normalized address, coordinates, address ID, match level, granularity, confidence, reasons, unmatched tails, and dictionary status. Level 5/6 is oaza/aza, 7 is block, and 8 is building or house node when covered. City-level or town-prefix candidates remain partial; town-level results are not door-number or coordinate accuracy claims. Parcel addresses (番地) match at level 7; a sub-number (枝番) the dictionary lacks stays partial. |
+| `POST /v1/jp/postal-codes/lookup` | — | $0.001 | You need a Japan Post postal-code lookup or reverse lookup from a postal code or administrative address. | Japan Post local-snapshot matches with postal code, prefecture, city, town, kana, Japan Post romanized prefecture/city/town, confidence, source, data version, and candidate count. Business-specific codes of single offices (e.g. 100-8310) return postal_code_type business_specific with the office name and street. |
 
 ### Request fields / リクエスト項目
 
@@ -70,6 +70,9 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 - `validate`: `address_validated` is true only when the address reaches `requested_level`. `match_status` is `exact`, `normalized_exact`, `partial`, `ambiguous`, `conflict`, `not_found` or `unverified`; `reasons` explains why. `partial` usually means the address is real but less precise than requested (e.g. no house number).
 - `normalize` / `geocode`: `match_level`, `verified_level` and `precision_satisfied` tell how deep the match went; `candidate_count` above 1 means the address is ambiguous — show the candidates instead of choosing one.
 - A missing postal code is **not** inferred by `normalize`; use `postal-lookup` if the user needs it.
+- Business-specific postal codes: a `postal-lookup` match has `postal_code_type` `area` or `business_specific`; a business code also returns the office's `business_name`, `street` and `business_kind` (`office` or `po_box`). `normalize` and `validate` accept a business code that matches its address and still report a conflict when it does not. Reverse lookup by address never returns a business code — a business code belongs to one office, not to the area.
+- Parcel addresses (地番, e.g. `大字柏倉2462番地`) match at level 7. A sub-number (枝番, the `19` in `5番地19`) that the registry dictionary does not hold stays `partial` with the unmatched part in `unmatched_tail` — the parcel exists, the sub-number was not confirmed.
+- `warnings` may include `duplicate_spelling_candidates_merged`: the dictionary holds one house under two spellings at the same point (e.g. 南十二条 / 南１２条), returned once.
 - `normalized_en` uses Japan Post's official romanization (KEN_ALL_ROME), e.g. `1-9-1 Marunochi, Chiyoda-ku, Tokyo 100-0005`, with `normalized_en_source: japan_post_romaji` and a `normalized_en_confidence`. Japan Post's spelling is kept as published (no long-vowel marks), and building names are not translated. `/v1/jp/addresses/parse` also returns `components_en`, and each `/v1/jp/postal-codes/lookup` match returns `prefecture_en`, `city_en` and `town_en`. Nothing is machine-translated.
 - `normalized_en_common` gives the spelling people usually write where Japan Post's differs (丸の内: Marunouchi rather than Japan Post's Marunochi); use it for display and keep `normalized_en` for matching Japan Post data.
 
@@ -96,7 +99,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/addresses/normalize \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-address/1.2.1" \
+  -H "X-JPVerify-Client: jp-address/1.3.0" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"}'
 ```
@@ -107,7 +110,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/addresses/normalize",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-address/1.2.1"},
+             "X-JPVerify-Client": "jp-address/1.3.0"},
     json={"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"},
     timeout=60,
 )
@@ -119,7 +122,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/addresses/normalize \
-  -H "X-JPVerify-Client: jp-address/1.2.1" \
+  -H "X-JPVerify-Client: jp-address/1.3.0" \
   -H "Content-Type: application/json" \
   -d '{"address": "東京都新宿区西新宿2丁目8番1号", "response_language": "both"}'
 ```

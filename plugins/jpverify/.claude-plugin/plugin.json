@@ -1,7 +1,7 @@
 {
   "name": "jpverify",
   "displayName": "JPVerify",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Japan business data for AI agents: company (法人番号) and T-number (インボイス) verification, invoice issuer checks, English company lookup and address checks via the JPVerify MCP server.",
   "author": {
     "name": "JPVerify (DSテクニック)",

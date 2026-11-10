@@ -7,7 +7,7 @@ Replace `<YOUR_JPVERIFY_API_KEY>` with your key (create one at https://www.jpver
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/invoice-registrations/verify \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.2.1" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.0" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```
@@ -18,7 +18,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/invoice-registrations/verify",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.2.1"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.3.0"},
     json={"registration_number": "T1013301046627", "response_language": "both"},
     timeout=60,
 )
@@ -30,7 +30,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/invoices/check-issuer \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.2.1" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.0" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "supplier_name": "株式会社ABC", "address": "東京都千代田区千代田1-1", "invoice_date": "2026-11-01", "response_language": "both"}'
 ```
@@ -41,7 +41,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/invoices/check-issuer",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.2.1"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.3.0"},
     json={"registration_number": "T1013301046627", "supplier_name": "株式会社ABC", "address": "東京都千代田区千代田1-1", "invoice_date": "2026-11-01", "response_language": "both"},
     timeout=60,
 )
@@ -53,7 +53,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/invoice-registrations/verify-batch \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.2.1" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.0" \
   -H "Content-Type: application/json" \
   -d '{"registration_numbers": ["T1013301046627"], "response_language": "both"}'
 ```
@@ -64,7 +64,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/invoice-registrations/verify-batch",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.2.1"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.3.0"},
     json={"registration_numbers": ["T1013301046627"], "response_language": "both"},
     timeout=60,
 )
@@ -76,7 +76,7 @@ print(response.status_code, response.json())
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/invoices/check-issuer-batch \
   -H "Authorization: Bearer <YOUR_JPVERIFY_API_KEY>" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.2.1" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.0" \
   -H "Content-Type: application/json" \
   -d '{"items": [{"registration_number": "T1013301046627", "supplier_name": "宏達株式会社", "invoice_date": "2026-10-31"}], "response_language": "both"}'
 ```
@@ -87,7 +87,7 @@ import requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/invoices/check-issuer-batch",
     headers={"Authorization": "Bearer <YOUR_JPVERIFY_API_KEY>",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.2.1"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.3.0"},
     json={"items": [{"registration_number": "T1013301046627", "supplier_name": "宏達株式会社", "invoice_date": "2026-10-31"}], "response_language": "both"},
     timeout=60,
 )
