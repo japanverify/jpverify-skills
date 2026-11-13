@@ -1,5 +1,8 @@
 # JPVerify skills — Japan business data for AI agents
 
+[![M8ven Score](https://m8ven.ai/badge/mcp/japanverify-jpverify-skills-jku8rn?v=dda0069d91cd001f3062d3636a758f3f)](https://m8ven.ai/mcp/japanverify-jpverify-skills-jku8rn?s=readme)
+[![JPVerify MCP server](https://mcprush.com/badge/jpverify-mcp/card.svg)](https://mcprush.com/to/jpverify-mcp?ref=badge)
+
 Agent skills and a Claude Code plugin for [JPVerify](https://www.jpverify.com/?ref=github): verify Japanese companies
 (法人番号) and qualified-invoice T-numbers (インボイス), check invoice issuers (including registration on the
 invoice date and your supplier master data), and more — with your agent choosing the right call and keeping costs in check.
