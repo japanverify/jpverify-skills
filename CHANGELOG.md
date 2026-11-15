@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.1 — 2026-11
+
+Documentation only; the skills' workflows and prices are unchanged.
+
+- **Data currency is now machine-checkable.** Company and invoice-registration results carry `source_type`
+  `official_daily_sync` when the local NTA register holds the NTA's newest published daily file (`public_snapshot`
+  only if a sync is behind) and a new `source_sync` object (`official_published_through`, `applied_through`,
+  `last_checked_at`, `signature_verified`, `up_to_date`). An exact T-number match is `verification_confidence: high`
+  while up to date. The same status is on the free `GET /health` (`company_source_sync`, `invoice_source_sync`).
+
 ## 1.3.0 — 2026-11
 
 Better results from the same endpoints; no field was removed or renamed, prices are unchanged.
