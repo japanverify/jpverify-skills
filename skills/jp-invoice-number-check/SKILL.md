@@ -13,7 +13,7 @@ license: MIT
 
 # Japanese T-number and invoice issuer check / インボイス登録番号と発行者の確認
 
-Version 1.3.2 · JPVerify · https://www.jpverify.com
+Version 1.3.3 · JPVerify · https://www.jpverify.com
 
 ## When to use / いつ使うか
 
@@ -31,12 +31,12 @@ JPVerify is a paid, per-call API. Pick the first option that applies; never gues
 
 1. **API key (recommended).** If the environment has `JPVERIFY_API_KEY` (a `jpv_live_…` key the user created), send it on every call:
    - HTTP: header `Authorization: Bearer $JPVERIFY_API_KEY` (or `X-API-Key`).
-   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-invoice-number-check/1.3.2"`
+   - MCP: if the JPVerify Claude Code plugin is installed, the `jpverify` MCP server is already configured and uses the key saved in the plugin's settings (`/plugin` → JPVerify → Configure), not `JPVERIFY_API_KEY`. Otherwise: `claude mcp add --transport http jpverify https://api.jpverify.com/mcp --header "Authorization: Bearer $JPVERIFY_API_KEY" --header "X-JPVerify-Client: jp-invoice-number-check/1.3.3"`
    Each successful call is deducted from the user's prepaid USD credits; failed or invalid calls are refunded automatically. Before a large batch, check the balance for free: `GET https://api.jpverify.com/v1/account/balance` with the same header, or the MCP tool `jpverify_balance`.
 2. **x402 wallet.** If you have an x402 client with USDC on Base (`eip155:8453`) and the user approved a budget, call without a key: the API answers HTTP 402 with the exact price; sign and retry with `PAYMENT-SIGNATURE`. Pay only within the approved budget.
 3. **Neither.** Do not pay and do not invent a key. The MCP server also works without a key for the free tool `jpverify_guide` (`claude mcp add --transport http jpverify https://api.jpverify.com/mcp`); use it to confirm which call fits, then tell the user they can create a free account with starter credit at https://www.jpverify.com/signup?ref=jp-invoice-number-check and set `JPVERIFY_API_KEY`.
 
-Always send `X-JPVerify-Client: jp-invoice-number-check/1.3.2` on HTTP calls. Never print, log or share the API key.
+Always send `X-JPVerify-Client: jp-invoice-number-check/1.3.3` on HTTP calls. Never print, log or share the API key.
 
 ## Workflow / 手順
 
@@ -74,7 +74,7 @@ Japanese descriptions and request examples for every endpoint: [references/endpo
 
 - Data currency: `source_type` is `official_daily_sync` when JPVerify's copy of the NTA register holds the NTA's newest published daily file (the NTA publishes a day's changes after 06:00 JST the next business day; JPVerify applies them by 06:30), `public_snapshot` if that sync is behind, or `live_api`. `source_sync` gives `official_published_through`, `applied_through`, `last_checked_at`, `signature_verified` and `up_to_date`. An exact number match has `verification_confidence: high` while up to date, otherwise `medium`; `not_found` stays `medium` because a registration processed today is published only on the next business day.
 - `/v1/jp/invoice-registrations/verify`: `status` is `registered`, `registered_until_expiry`, `expired`, `cancelled`, `deleted` or `not_found`; `verdict` is `qualified` only while the registration is valid. `format_valid` / `checksum_valid` false means the number itself is wrong (check for a typo before concluding anything).
-- `/v1/jp/invoices/check-issuer`: `check_results` gives one status per check: `registration` (`ok`, `inactive`, `not_found`, `invalid`), `issuer_name` (`ok`, `mismatch`, `unverifiable`, `not_evaluated`), `issuer_address` (`ok`, `mismatch`, `not_evaluated`), and with `invoice_date`, `registration_on_date` (`ok`, `not_registered`, `not_found`). `decision` is `verified`, `manual_review` or `not_found`; with `invoice_date` it follows the registration on that date, so an invoice dated before a later cancellation can still be `verified`, and one dated outside the registration period carries risk flag `invoice_date_outside_registration_period`. `company_match` and `address_match` compare the invoice's issuer with the registered record; `risk_flags` lists differences such as `supplier_name_differs_from_registered_legal_name`, `address_mismatch` or `invoice_cancelled`. A trade name differing from the legal name is common — present it as a difference to confirm, not as fraud. The issuer name can be sent in Japanese or English: English is matched word for word with the company's official English name (NTA, EDINET, GLEIF) or with its romanized registered reading, and `check_results.issuer_name.matched_by` says which (`compared_with` shows the value used). `unverifiable` (risk flag `supplier_name_english_unverified`) means an English name could not be confirmed — most Japanese companies have no official English name — not that it is wrong; ask the user to confirm it, or send the Japanese name if the invoice shows one.
+- `/v1/jp/invoices/check-issuer`: `check_results` gives one status per check: `registration` (`ok`, `inactive`, `not_found`, `invalid`), `issuer_name` (`ok`, `likely`, `mismatch`, `unverifiable`, `not_evaluated`), `issuer_address` (`ok`, `mismatch`, `not_evaluated`), and with `invoice_date`, `registration_on_date` (`ok`, `not_registered`, `not_found`). `decision` is `verified`, `manual_review` or `not_found`; with `invoice_date` it follows the registration on that date, so an invoice dated before a later cancellation can still be `verified`, and one dated outside the registration period carries risk flag `invoice_date_outside_registration_period`. `company_match` and `address_match` compare the invoice's issuer with the registered record; `risk_flags` lists differences such as `supplier_name_differs_from_registered_legal_name`, `address_mismatch` or `invoice_cancelled`. A trade name differing from the legal name is common — present it as a difference to confirm, not as fraud. The issuer name can be sent in Japanese or English: English is matched word for word with the company's official English name (NTA, EDINET, GLEIF) or with its romanized registered reading, and `check_results.issuer_name.matched_by` says which (`compared_with` shows the value used). `likely` (`matched_by` `katakana_phonetic` or `website_domain`) means the English name sounds like the registered katakana name (Technoarch for テクノアーチ) or matches the company website: the decision is `verified` only when the address or supplier master number also matches, otherwise `manual_review` with risk flag `supplier_name_phonetic_match_only` — sending the address is the easiest way to confirm. `unverifiable` (risk flag `supplier_name_english_unverified`) means an English name could not be confirmed — most Japanese companies have no official English name — not that it is wrong; ask the user to confirm it, or send the Japanese name if the invoice shows one.
 - With `expected_registration_number` / `expected_corporate_number`, `check_results.supplier_master` is `ok`, `mismatch` (risk flag `invoice_issuer_differs_from_supplier_master`: the invoice may come from another company) or `not_evaluated` (the T-number belongs to a sole proprietor with no corporate number). Anything but `ok` makes `decision` `manual_review`.
 - For individuals (sole proprietors) the registry often does not publish an address, and the published name may differ from the trade name on the invoice; say so instead of treating missing or different fields as a mismatch.
 
@@ -101,7 +101,7 @@ API key:
 ```bash
 curl -X POST https://api.jpverify.com/v1/jp/invoice-registrations/verify \
   -H "Authorization: Bearer $JPVERIFY_API_KEY" \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.2" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.3" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```
@@ -112,7 +112,7 @@ import os, requests
 response = requests.post(
     "https://api.jpverify.com/v1/jp/invoice-registrations/verify",
     headers={"Authorization": f"Bearer {os.environ['JPVERIFY_API_KEY']}",
-             "X-JPVerify-Client": "jp-invoice-number-check/1.3.2"},
+             "X-JPVerify-Client": "jp-invoice-number-check/1.3.3"},
     json={"registration_number": "T1013301046627", "response_language": "both"},
     timeout=60,
 )
@@ -124,7 +124,7 @@ x402 (no account):
 ```bash
 # No key: shows the HTTP 402 x402 price; pay with an x402 client and retry with PAYMENT-SIGNATURE.
 curl -i -X POST https://api.jpverify.com/v1/jp/invoice-registrations/verify \
-  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.2" \
+  -H "X-JPVerify-Client: jp-invoice-number-check/1.3.3" \
   -H "Content-Type: application/json" \
   -d '{"registration_number": "T1013301046627", "response_language": "both"}'
 ```

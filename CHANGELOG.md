@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.3 — 2026-11
+
+- **More English issuer names confirmed.** `/v1/jp/invoices/check-issuer` aligns an English name with the registered
+  reading word by word, using loanwords from JMdict (EDRDG) and from official English company names (Galaxy, Partners,
+  International ...). New status `likely` for a name that sounds like the registered katakana name (Technoarch for テクノアーチ)
+  or matches the company's website domain: `verified` only when the address or supplier master number also matches,
+  otherwise `manual_review` with risk flag `supplier_name_phonetic_match_only`. `matched_by` adds `katakana_phonetic`
+  and `website_domain`.
+- English addresses keep the spelling used before Japan Post's 2026-11 romaji file (Chuo-ku, Kyoto-shi, Toyotacho).
+
 ## 1.3.2 — 2026-11
 
 - **English issuer names on invoices.** `/v1/jp/invoices/check-issuer` (and its batch and MCP tool) now accepts the
