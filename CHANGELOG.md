@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.4 — 2026-11
+
+- **Readable English names for companies without an official one.** Katakana loanwords in the registered name are
+  rendered as English words instead of being spelled out: Shiseido Creative (was Shiseidokurieitibu), au Financial
+  Service, NTT Data, VLM, Takahashi Medical & Consulting. `name_en_source` is the new `loanword_rendering`; brand
+  coinages and kanji names stay romanized (`furigana_transliteration`). Neither is the company's own English name.
+
 ## 1.3.3 — 2026-11
 
 - **More English issuer names confirmed.** `/v1/jp/invoices/check-issuer` aligns an English name with the registered
