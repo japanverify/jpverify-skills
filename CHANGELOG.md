@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.2 — 2026-11
+
+- **English issuer names on invoices.** `/v1/jp/invoices/check-issuer` (and its batch and MCP tool) now accepts the
+  issuer name in English as well as Japanese. English is matched word for word with the company's official English
+  name (NTA, EDINET, GLEIF) or its romanized registered reading (`Hirotatsu Co., Ltd.` for 宏達株式会社, `Murata Trading`
+  for ムラタ商事); a registered name in Latin letters (ＩＢＡＬ) is compared directly. `check_results.issuer_name` adds
+  `matched_by`, `compared_with`, `compared_with_source` and `hint`, and a new status `unverifiable` (risk flag
+  `supplier_name_english_unverified`): an English name that cannot be confirmed because the company has no official
+  English name. It goes to manual review but is not a mismatch; `company_match` is then `null`.
+
 ## 1.3.1 — 2026-11
 
 Documentation only; the skills' workflows and prices are unchanged.
