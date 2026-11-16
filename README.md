@@ -4,6 +4,12 @@
 [![JPVerify MCP server](https://mcprush.com/badge/jpverify-mcp/card.svg)](https://mcprush.com/to/jpverify-mcp?ref=badge)
 [![JPVerify: listed on Ext Ops Panel](https://extops.dev/plugins/mcp/com.jpverify/jpverify/banner/pulse-run/card-light.svg)](https://extops.dev/plugins/mcp/com.jpverify/jpverify)
 
+<a href="https://datacircle.dev/business-verification-api-pricing/japan/jpverify-most-accurate"><img src="https://datacircle.dev/badge/business-verification-api-pricing-japan/jpverify-most-accurate.svg" alt="Datacircle: Most Accurate business verification API in Japan" width="160"></a>
+
+**100% correct in an independent benchmark.** Datacircle tested JPVerify's Japanese company verification with real and
+invented company names: it found 100% of the real companies and answered "not found" for 100% of the invented ones,
+with no fabricated matches.
+
 Agent skills and a Claude Code plugin for [JPVerify](https://www.jpverify.com/?ref=github): verify Japanese companies
 (法人番号) and qualified-invoice T-numbers (インボイス), check invoice issuers (including registration on the
 invoice date and your supplier master data), and more — with your agent choosing the right call and keeping costs in check.
