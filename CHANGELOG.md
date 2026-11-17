@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.5 — 2026-11
+
+- **English input everywhere.** Company verify, report, supplier resolve and regulated-entity verify accept the
+  registered English name (NTA, EDINET, GLEIF) or the romanized registered name as well as the Japanese one
+  (`Toyota Motor Corporation`, `Toyota Jidosha Kabushiki Kaisha`). Brand, trade and short names stay with
+  `/v1/jp/companies/resolve`. Addresses, postal lookup and geocode `components` accept romanized input
+  (`1-9-1 Marunouchi, Chiyoda-ku, Tokyo`; `Tokyo` / `Chiyoda-ku` / `Marunouchi`), reported in `romanized_input`.
+- **One job per address call.** `parse` splits the address as written and costs $0.002; `normalize` gives the standard
+  form and no longer returns coordinates or `decision_summary`/`address_validated`; coordinates come only from
+  `geocode` and the decision only from `validate`.
+- **Supplier cross-checks.** `/v1/jp/suppliers/resolve` adds `registration_consistency` (a closed company with an active
+  T-number, or the reverse) and `regulated_license` (FSA licences held, information only).
+
 ## 1.3.4 — 2026-11
 
 - **Readable English names for companies without an official one.** Katakana loanwords in the registered name are
