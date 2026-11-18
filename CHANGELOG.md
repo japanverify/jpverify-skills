@@ -1,6 +1,10 @@
 # Changelog
 
-## 1.3.5 — 2026-11
+## 1.3.6 · 2026-11-18
+
+An English issuer name that conflicts with the company's official English name, or matches only its website, goes to manual review even when the supplier master number agrees. A sound-alike or word-break variant is verified only with the caller's supplier master number; the printed address on the same invoice no longer confirms it. Nippon and Nihon are the same word. Use the supplier `decision` field when routing registry pre-checks.
+
+## 1.3.6 — 2026-11
 
 - **English input everywhere.** Company verify, report, supplier resolve and regulated-entity verify accept the
   registered English name (NTA, EDINET, GLEIF) or the romanized registered name as well as the Japanese one
